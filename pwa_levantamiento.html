@@ -797,35 +797,48 @@ async function doLogin(){
   btn.disabled=true; btn.textContent='Entrando…';
 
   try {
+    // Login con Supabase
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
-      body: JSON.stringify({email:user,password:pass})
+      headers:{
+        'Content-Type':'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify({email:user, password:pass})
     });
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error_description||'Error de autenticación');
+    if(!res.ok) throw new Error(data.error_description || data.msg || 'Error de autenticación');
 
     // Obtener perfil brigadista
     const pRes = await fetch(`${SUPABASE_URL}/rest/v1/brigadistas?id=eq.${data.user.id}&select=*`,{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${data.access_token}`}
+      headers:{
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${data.access_token}`
+      }
     });
     const perfil = await pRes.json();
+    const p = perfil[0] || {};
 
     S.brig = {
-      ...( perfil[0] || {} ),
-      email: user,
-      token: data.access_token,
-      nombre: perfil[0]?.nombre || user.split('@')[0]
+      id:         data.user.id,
+      email:      user,
+      token:      data.access_token,
+      nombre:     p.nombre || user.split('@')[0],
+      seccion:    p.seccion    || 2126,
+      distrito_f: p.distrito_f || 6,
+      distrito_l: p.distrito_l || 6,
+      rol:        p.rol        || 'BRIGADISTA'
     };
 
-    // Cargar domicilios reales de la sección del brigadista
-    await cargarDomicilios(S.brig.seccion, SUPABASE_KEY);
+    console.log('✅ Login OK:', S.brig.nombre, '· Sección:', S.brig.seccion);
+    await cargarDomicilios(S.brig.seccion, S.brig.token);
     goPage('home');
   } catch(e) {
     console.warn('Login error:', e.message);
-    // Demo fallback con sección 1045
-    S.brig = { nombre:'Brigadista Demo', seccion:1045, distrito_f:6, distrito_l:3, email:user };
-    await cargarDomicilios(1045, SUPABASE_KEY);
+    // Demo fallback — intentar cargar sección desde Supabase por email
+    S.brig = { nombre: user.split('@')[0], seccion:2126, distrito_f:6, distrito_l:6, email:user };
+    await cargarDomicilios(2126, SUPABASE_KEY);
     goPage('home');
   }
   btn.disabled=false; btn.textContent='Entrar';
@@ -1178,7 +1191,7 @@ function toast(msg,type){
 //  SW
 // =====================================================
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
 updateOffline();
