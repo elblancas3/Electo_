@@ -3,980 +3,1093 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0f1923">
+<meta name="theme-color" content="#f97316">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Levantamiento">
-<meta name="description" content="Sistema de levantamiento domiciliario en campo">
-<link rel="manifest" href="manifest.json">
-<title>Levantamiento NL</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-title" content="ELECTO">
+<title>ELECTO · Levantamiento</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ===================== TOKENS ===================== */
 :root {
-  --bg0:   #0a1018;
-  --bg1:   #0f1923;
-  --bg2:   #162030;
-  --bg3:   #1e2d3e;
-  --bg4:   #253547;
-  --border:#2d4055;
-  --text0: #f0f4f8;
-  --text1: #b8c8d8;
-  --text2: #7a95ae;
-  --accent:#f59e0b;
-  --acc2:  #fbbf24;
-  --acc-bg:#2a1f06;
-  --green: #22c55e;
-  --green-bg:#0a2018;
-  --red:   #ef4444;
-  --red-bg:#200a0a;
-  --blue:  #3b82f6;
-  --blue-bg:#0a1430;
-  --gray:  #64748b;
-  --gray-bg:#14202c;
-  --radius:16px;
-  --radius-sm:10px;
-  --shadow: 0 4px 24px rgba(0,0,0,.4);
+  --orange:     #f97316;
+  --orange-d:   #ea580c;
+  --orange-l:   #fff7ed;
+  --orange-m:   #fed7aa;
+  --bg:         #f8fafc;
+  --white:      #ffffff;
+  --gray-50:    #f8fafc;
+  --gray-100:   #f1f5f9;
+  --gray-200:   #e2e8f0;
+  --gray-300:   #cbd5e1;
+  --gray-400:   #94a3b8;
+  --gray-500:   #64748b;
+  --gray-600:   #475569;
+  --gray-700:   #334155;
+  --gray-800:   #1e293b;
+  --gray-900:   #0f172a;
+  --green:      #16a34a;
+  --green-l:    #dcfce7;
+  --red:        #dc2626;
+  --red-l:      #fee2e2;
+  --blue:       #2563eb;
+  --blue-l:     #dbeafe;
+  --yellow:     #d97706;
+  --yellow-l:   #fef3c7;
+  --radius:     18px;
+  --radius-sm:  12px;
+  --radius-xs:  8px;
+  --shadow:     0 2px 16px rgba(0,0,0,.08);
+  --shadow-lg:  0 8px 32px rgba(249,115,22,.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:'Montserrat',sans-serif;color:var(--gray-800);font-size:15px;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,select,textarea{font-family:inherit;outline:none;}
+*{-webkit-overflow-scrolling:touch;}
+
+/* APP */
+#app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{
+  background:var(--white);border-bottom:1px solid var(--gray-200);
+  padding:0 20px;height:62px;display:flex;align-items:center;gap:12px;
+  flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.06);position:relative;z-index:10;
+}
+.topbar-logo{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--orange),var(--orange-d));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 3px 10px rgba(249,115,22,.3);
+}
+.topbar-info{flex:1;}
+.topbar-title{font-size:16px;font-weight:800;color:var(--gray-900);letter-spacing:-.3px;}
+.topbar-sub{font-size:11px;font-weight:500;color:var(--gray-400);}
+.topbar-back{
+  width:36px;height:36px;border-radius:10px;background:var(--gray-100);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--gray-600);flex-shrink:0;transition:background .15s;
+}
+.topbar-back:active{background:var(--gray-200);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.badge-offline{
+  background:var(--red-l);color:var(--red);border-radius:99px;
+  font-size:11px;font-weight:700;padding:4px 10px;display:none;
+}
+.badge-offline.show{display:block;}
+
+/* OFFLINE BAR */
+#offline-bar{
+  background:var(--red);color:white;font-size:12px;font-weight:600;
+  padding:8px 20px;text-align:center;display:none;flex-shrink:0;
+}
+#offline-bar.show{display:block;}
+
+/* PAGES */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
+.page.hidden{display:none!important;}
+.page-content{padding:20px;display:flex;flex-direction:column;gap:16px;flex:1;}
+
+/* ======= LOGIN ======= */
+#page-login{
+  background:linear-gradient(160deg, #fff7ed 0%, #f8fafc 60%);
+  justify-content:center;align-items:center;padding:24px;
+}
+.login-hero{text-align:center;margin-bottom:32px;}
+.login-icon{
+  width:80px;height:80px;border-radius:24px;margin:0 auto 16px;
+  background:linear-gradient(135deg,var(--orange),var(--orange-d));
+  display:flex;align-items:center;justify-content:center;font-size:38px;
+  box-shadow:var(--shadow-lg);
+}
+.login-title{font-size:26px;font-weight:900;color:var(--gray-900);letter-spacing:-.5px;}
+.login-sub{font-size:13px;color:var(--gray-400);font-weight:500;margin-top:4px;}
+.login-card{
+  background:var(--white);border-radius:var(--radius);padding:28px;
+  width:100%;max-width:360px;box-shadow:var(--shadow);
+  border:1px solid var(--gray-200);
+}
+.field-wrap{margin-bottom:16px;}
+.field-label{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block;}
+.field-input{
+  width:100%;background:var(--gray-50);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm);color:var(--gray-900);font-size:15px;font-weight:500;
+  padding:13px 15px;transition:border .2s;
+}
+.field-input:focus{border-color:var(--orange);}
+.btn-primary{
+  width:100%;background:var(--orange);color:white;font-size:16px;font-weight:800;
+  border-radius:var(--radius-sm);padding:16px;transition:all .15s;letter-spacing:-.2px;
+  box-shadow:0 4px 16px rgba(249,115,22,.3);
+}
+.btn-primary:active{transform:scale(.98);background:var(--orange-d);}
+.btn-primary:disabled{opacity:.5;}
+
+/* ======= HOME ======= */
+.home-header{
+  background:linear-gradient(135deg,var(--orange),var(--orange-d));
+  border-radius:var(--radius);padding:22px;color:white;
+  box-shadow:var(--shadow-lg);position:relative;overflow:hidden;
+}
+.home-header::after{
+  content:'🏠';position:absolute;right:-10px;bottom:-14px;
+  font-size:80px;opacity:.15;
+}
+.home-brig{font-size:18px;font-weight:800;letter-spacing:-.3px;}
+.home-meta{font-size:12px;opacity:.85;font-weight:500;margin-top:3px;}
+.home-prog{margin-top:16px;}
+.home-prog-top{display:flex;justify-content:space-between;margin-bottom:8px;}
+.home-prog-label{font-size:12px;font-weight:600;opacity:.85;}
+.home-prog-pct{font-size:20px;font-weight:900;letter-spacing:-.5px;}
+.home-prog-track{height:10px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;}
+.home-prog-fill{height:100%;background:white;border-radius:99px;transition:width .8s ease;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.kpi-box{
+  background:var(--white);border-radius:var(--radius);padding:18px;
+  border:1px solid var(--gray-200);box-shadow:var(--shadow);
+}
+.kpi-box-icon{font-size:24px;margin-bottom:8px;}
+.kpi-box-num{font-size:28px;font-weight:900;letter-spacing:-1px;line-height:1;}
+.kpi-box-num.orange{color:var(--orange);}
+.kpi-box-num.green{color:var(--green);}
+.kpi-box-num.blue{color:var(--blue);}
+.kpi-box-num.red{color:var(--red);}
+.kpi-box-label{font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
+
+.section-label{font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;}
+
+.btn-ruta{
+  background:var(--orange);color:white;font-size:17px;font-weight:800;
+  border-radius:var(--radius);padding:20px;text-align:center;
+  box-shadow:var(--shadow-lg);transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-ruta:active{transform:scale(.98);}
+
+.btn-sec{
+  background:var(--white);color:var(--gray-700);font-size:15px;font-weight:700;
+  border:1.5px solid var(--gray-200);border-radius:var(--radius);padding:16px;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;
+}
+.btn-sec:active{background:var(--gray-100);}
+
+.sync-row{
+  display:flex;align-items:center;gap:8px;background:var(--white);
+  border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:12px 14px;
+}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.sync-dot.pending{background:var(--orange);animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-text{font-size:12px;font-weight:600;color:var(--gray-500);flex:1;}
+
+/* ======= LISTA ======= */
+.search-wrap{
+  background:var(--white);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm);display:flex;align-items:center;padding:0 14px;gap:8px;
+}
+.search-wrap input{
+  flex:1;background:none;border:none;color:var(--gray-900);
+  font-size:15px;font-weight:500;padding:13px 0;
+}
+.search-wrap input::placeholder{color:var(--gray-300);}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{
+  flex-shrink:0;background:var(--white);border:1.5px solid var(--gray-200);
+  color:var(--gray-500);font-size:12px;font-weight:700;border-radius:99px;
+  padding:7px 14px;transition:all .15s;cursor:pointer;
+}
+.chip.on{background:var(--orange-l);border-color:var(--orange);color:var(--orange);}
+
+.dom-list{display:flex;flex-direction:column;gap:10px;}
+.dom-item{
+  background:var(--white);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius);padding:16px;
+  display:flex;align-items:center;gap:14px;transition:all .15s;cursor:pointer;
+}
+.dom-item:active{background:var(--gray-50);transform:scale(.99);}
+.dom-item.has-visit{border-left:4px solid var(--green);}
+.dom-item.has-visit.ausente{border-left-color:var(--orange);}
+.dom-item.has-visit.rechazado{border-left-color:var(--red);}
+.dom-item.has-visit.inaccesible{border-left-color:var(--gray-400);}
+.dom-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.dom-dot.pendiente{background:var(--gray-200);}
+.dom-dot.visitado{background:var(--green);box-shadow:0 0 0 3px var(--green-l);}
+.dom-dot.ausente{background:var(--orange);box-shadow:0 0 0 3px var(--orange-l);}
+.dom-dot.rechazado{background:var(--red);box-shadow:0 0 0 3px var(--red-l);}
+.dom-dot.inaccesible{background:var(--gray-400);}
+.dom-dot.incompleto{background:var(--blue);box-shadow:0 0 0 3px var(--blue-l);}
+.dom-info{flex:1;min-width:0;}
+.dom-dir{font-size:14px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dom-col{font-size:12px;color:var(--gray-400);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dom-badge{
+  flex-shrink:0;font-size:10px;font-weight:800;border-radius:99px;
+  padding:4px 10px;text-transform:uppercase;letter-spacing:.04em;
+}
+.badge-pendiente{background:var(--gray-100);color:var(--gray-400);}
+.badge-visitado{background:var(--green-l);color:var(--green);}
+.badge-ausente{background:var(--orange-l);color:var(--orange);}
+.badge-rechazado{background:var(--red-l);color:var(--red);}
+.badge-inaccesible{background:var(--gray-100);color:var(--gray-500);}
+.badge-incompleto{background:var(--blue-l);color:var(--blue);}
+
+.empty-msg{text-align:center;padding:48px 20px;color:var(--gray-300);}
+.empty-msg .e-icon{font-size:44px;margin-bottom:12px;}
+.empty-msg p{font-size:14px;font-weight:600;}
+
+/* ======= FORMULARIO ======= */
+.dom-card{
+  background:var(--white);border-radius:var(--radius);padding:20px;
+  border:1px solid var(--gray-200);box-shadow:var(--shadow);
+}
+.dom-card-dir{font-size:19px;font-weight:800;color:var(--gray-900);line-height:1.3;letter-spacing:-.3px;}
+.dom-card-col{font-size:13px;color:var(--gray-400);font-weight:500;margin-top:5px;}
+.dom-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.dom-pill{
+  background:var(--gray-100);border-radius:99px;
+  font-size:11px;font-weight:700;color:var(--gray-500);padding:4px 12px;
 }
 
-/* ===================== RESET ===================== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; background: var(--bg0); }
-body { font-family: 'DM Sans', sans-serif; color: var(--text0); font-size: 16px; line-height: 1.5; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; }
-input, select, textarea { font-family: inherit; outline: none; }
-* { -webkit-overflow-scrolling: touch; }
+/* GPS */
+.gps-box{
+  background:var(--gray-50);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm);padding:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.gps-led{width:10px;height:10px;border-radius:50%;background:var(--gray-300);flex-shrink:0;}
+.gps-led.ok{background:var(--green);box-shadow:0 0 0 3px var(--green-l);animation:blink 2s infinite;}
+.gps-led.searching{background:var(--orange);animation:blink 1s infinite;}
+.gps-info{flex:1;}
+.gps-status{font-size:12px;font-weight:700;color:var(--gray-600);}
+.gps-coords{font-size:11px;color:var(--gray-400);margin-top:2px;font-variant-numeric:tabular-nums;}
+.btn-gps-retry{font-size:12px;font-weight:700;color:var(--orange);padding:6px;}
 
-/* ===================== APP SHELL ===================== */
-#app { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+/* ESTATUS */
+.estatus-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.est-btn{
+  border:2px solid var(--gray-200);border-radius:var(--radius-sm);
+  padding:16px 12px;text-align:center;cursor:pointer;transition:all .15s;
+  background:var(--white);
+}
+.est-btn:active{transform:scale(.97);}
+.est-icon{font-size:30px;display:block;margin-bottom:6px;}
+.est-label{font-size:13px;font-weight:700;color:var(--gray-600);}
+.est-btn.sel-VISITADO{border-color:var(--green);background:var(--green-l);}
+.est-btn.sel-VISITADO .est-label{color:var(--green);}
+.est-btn.sel-AUSENTE{border-color:var(--orange);background:var(--orange-l);}
+.est-btn.sel-AUSENTE .est-label{color:var(--orange);}
+.est-btn.sel-RECHAZADO{border-color:var(--red);background:var(--red-l);}
+.est-btn.sel-RECHAZADO .est-label{color:var(--red);}
+.est-btn.sel-INACCESIBLE{border-color:var(--gray-400);background:var(--gray-100);}
+.est-btn.sel-INACCESIBLE .est-label{color:var(--gray-500);}
+.est-btn.sel-INCOMPLETO{border-color:var(--blue);background:var(--blue-l);}
+.est-btn.sel-INCOMPLETO .est-label{color:var(--blue);}
+.est-full{grid-column:1/-1;}
 
-/* ===================== TOPBAR ===================== */
-.topbar {
-  background: var(--bg1);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 20px;
-  display: flex; align-items: center; gap: 12px;
-  min-height: 60px; flex-shrink: 0;
-  position: relative; z-index: 10;
+/* SECCIÓN INE */
+.ine-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--white);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm);padding:16px;
 }
-.topbar-back {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--bg3); display: flex; align-items: center; justify-content: center;
-  color: var(--text1); font-size: 18px; flex-shrink: 0;
-  transition: background .15s;
+.ine-label{font-size:14px;font-weight:700;color:var(--gray-700);}
+.ine-sub{font-size:12px;color:var(--gray-400);font-weight:500;margin-top:2px;}
+.toggle-group{display:flex;gap:6px;}
+.toggle-btn{
+  border:2px solid var(--gray-200);border-radius:var(--radius-xs);
+  padding:8px 16px;font-size:13px;font-weight:700;color:var(--gray-400);
+  background:var(--white);transition:all .15s;cursor:pointer;
 }
-.topbar-back:active { background: var(--bg4); }
-.topbar-title { font-size: 17px; font-weight: 700; flex: 1; }
-.topbar-sub { font-size: 12px; color: var(--text2); font-weight: 400; }
-.topbar-badge {
-  background: var(--acc-bg); color: var(--accent);
-  border: 1px solid var(--accent); border-radius: 20px;
-  font-size: 12px; font-weight: 600; padding: 3px 10px;
-}
+.toggle-btn.on-si{border-color:var(--green);background:var(--green-l);color:var(--green);}
+.toggle-btn.on-no{border-color:var(--red);background:var(--red-l);color:var(--red);}
+.toggle-btn:active{transform:scale(.96);}
 
-/* ===================== OFFLINE BANNER ===================== */
-#offline-bar {
-  background: var(--red-bg); border-bottom: 1px solid var(--red);
-  color: var(--red); font-size: 13px; font-weight: 500;
-  padding: 8px 20px; text-align: center; display: none; flex-shrink: 0;
+/* PREGUNTAS ENCUESTA */
+.form-block{
+  background:var(--white);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius);overflow:hidden;
 }
-#offline-bar.visible { display: block; }
+.form-block-header{
+  background:var(--gray-50);padding:14px 18px;
+  border-bottom:1px solid var(--gray-200);
+  display:flex;align-items:center;gap:10px;
+}
+.form-block-num{
+  width:26px;height:26px;border-radius:50%;background:var(--orange);
+  color:white;font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.form-block-q{font-size:13px;font-weight:700;color:var(--gray-700);line-height:1.4;}
+.form-block-body{padding:14px 18px;}
 
-/* ===================== CONTENT SCROLL ===================== */
-.page { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-.page.hidden { display: none; }
+/* Opciones */
+.opt-row{display:flex;flex-direction:column;gap:8px;}
+.opt-btn{
+  border:1.5px solid var(--gray-200);border-radius:var(--radius-xs);
+  padding:12px 16px;font-size:14px;font-weight:600;color:var(--gray-600);
+  background:var(--white);text-align:left;transition:all .15s;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+}
+.opt-btn::before{
+  content:'';width:18px;height:18px;border-radius:50%;border:2px solid var(--gray-300);
+  flex-shrink:0;transition:all .15s;
+}
+.opt-btn.selected{border-color:var(--orange);background:var(--orange-l);color:var(--orange-d);}
+.opt-btn.selected::before{background:var(--orange);border-color:var(--orange);}
+.opt-btn:active{transform:scale(.99);}
 
-/* ===================== LOGIN ===================== */
-#page-login {
-  justify-content: center; align-items: center; min-height: 100%;
-  background: radial-gradient(ellipse at 50% 0%, #1a2a3a 0%, var(--bg0) 70%);
+/* Opciones SI/NO */
+.yn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.yn-btn{
+  border:2px solid var(--gray-200);border-radius:var(--radius-xs);
+  padding:14px;font-size:15px;font-weight:800;color:var(--gray-400);
+  background:var(--white);text-align:center;transition:all .15s;cursor:pointer;
 }
-.login-logo {
-  text-align: center; margin-bottom: 32px;
-}
-.login-logo .logo-icon {
-  width: 72px; height: 72px; border-radius: 22px;
-  background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 34px; margin: 0 auto 16px; box-shadow: 0 8px 32px rgba(245,158,11,.3);
-}
-.login-logo h1 { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
-.login-logo p { color: var(--text2); font-size: 14px; margin-top: 4px; }
-.login-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 28px; width: 100%; max-width: 380px;
-  box-shadow: var(--shadow);
-}
-.field-label { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; letter-spacing: .05em; text-transform: uppercase; }
-.field-input {
-  width: 100%; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text0); font-size: 16px;
-  padding: 14px 16px; transition: border .2s;
-}
-.field-input:focus { border-color: var(--accent); }
-.field-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
-.btn-primary {
-  width: 100%; background: var(--accent); color: #000;
-  font-size: 16px; font-weight: 700; border-radius: var(--radius-sm);
-  padding: 16px; transition: all .15s; letter-spacing: .01em;
-}
-.btn-primary:active { transform: scale(.98); background: var(--acc2); }
-.btn-primary:disabled { opacity: .5; }
+.yn-btn.sel-si{border-color:var(--green);background:var(--green-l);color:var(--green);}
+.yn-btn.sel-no{border-color:var(--red);background:var(--red-l);color:var(--red);}
+.yn-btn:active{transform:scale(.97);}
 
-/* ===================== HOME ===================== */
-.brig-header {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 20px;
+/* Textarea */
+.form-textarea{
+  width:100%;background:var(--gray-50);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-xs);color:var(--gray-900);font-size:14px;font-weight:500;
+  padding:12px;resize:none;height:80px;transition:border .2s;
 }
-.brig-name { font-size: 22px; font-weight: 700; }
-.brig-meta { color: var(--text2); font-size: 14px; margin-top: 4px; }
-.brig-meta span { color: var(--accent); font-weight: 600; }
+.form-textarea:focus{border-color:var(--orange);}
 
-.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.kpi-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 18px; text-align: center;
+/* Contacto */
+.contacto-fields{display:flex;flex-direction:column;gap:12px;}
+.field-input-sm{
+  width:100%;background:var(--gray-50);border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-xs);color:var(--gray-900);font-size:15px;font-weight:500;
+  padding:13px 14px;transition:border .2s;
 }
-.kpi-card.accent { background: var(--acc-bg); border-color: rgba(245,158,11,.3); }
-.kpi-card.green  { background: var(--green-bg); border-color: rgba(34,197,94,.25); }
-.kpi-card.red    { background: var(--red-bg); border-color: rgba(239,68,68,.25); }
-.kpi-card.blue   { background: var(--blue-bg); border-color: rgba(59,130,246,.25); }
-.kpi-num { font-size: 36px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
-.kpi-card.accent .kpi-num { color: var(--accent); }
-.kpi-card.green  .kpi-num { color: var(--green); }
-.kpi-card.red    .kpi-num { color: var(--red); }
-.kpi-card.blue   .kpi-num { color: var(--blue); }
-.kpi-label { font-size: 12px; color: var(--text2); font-weight: 500; margin-top: 6px; text-transform: uppercase; letter-spacing: .05em; }
+.field-input-sm:focus{border-color:var(--orange);}
 
-.progress-block {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 20px;
+.stepper{
+  display:flex;align-items:center;background:var(--gray-50);
+  border:1.5px solid var(--gray-200);border-radius:var(--radius-xs);overflow:hidden;
 }
-.prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.prog-title { font-size: 15px; font-weight: 600; }
-.prog-pct { font-size: 22px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; }
-.prog-bar-track { height: 10px; background: var(--bg4); border-radius: 99px; overflow: hidden; }
-.prog-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--acc2) 100%); border-radius: 99px; transition: width .6s ease; }
-.prog-sub { font-size: 13px; color: var(--text2); margin-top: 10px; }
-
-.section-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .08em; }
-
-.btn-ruta {
-  background: var(--accent); color: #000; font-size: 17px; font-weight: 700;
-  border-radius: var(--radius); padding: 18px; text-align: center;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: all .15s; box-shadow: 0 4px 20px rgba(245,158,11,.25);
+.step-btn{
+  width:52px;height:52px;font-size:24px;font-weight:300;color:var(--gray-500);
+  background:var(--gray-100);transition:background .15s;flex-shrink:0;
 }
-.btn-ruta:active { transform: scale(.98); }
-.btn-secondary {
-  background: var(--bg3); color: var(--text0); font-size: 15px; font-weight: 600;
-  border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 14px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: background .15s;
-}
-.btn-secondary:active { background: var(--bg4); }
-
-/* ===================== LISTA DOMICILIOS ===================== */
-.search-box {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); display: flex; align-items: center;
-  padding: 0 14px; gap: 10px;
-}
-.search-box input {
-  flex: 1; background: none; border: none; color: var(--text0);
-  font-size: 15px; padding: 14px 0;
-}
-.search-box input::placeholder { color: var(--text2); }
-.search-icon { color: var(--text2); font-size: 18px; }
-
-.filter-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-.filter-chips::-webkit-scrollbar { display: none; }
-.chip {
-  flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border);
-  color: var(--text1); font-size: 13px; font-weight: 500;
-  border-radius: 99px; padding: 7px 14px; transition: all .15s; cursor: pointer;
-}
-.chip.active { background: var(--acc-bg); border-color: var(--accent); color: var(--accent); }
-
-.domicilio-list { display: flex; flex-direction: column; gap: 10px; }
-.dom-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
-  display: flex; align-items: flex-start; gap: 14px;
-  transition: background .15s; cursor: pointer;
-}
-.dom-card:active { background: var(--bg3); }
-.dom-status-dot {
-  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
-}
-.dom-status-dot.pendiente { background: var(--border); }
-.dom-status-dot.visitado  { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,.5); }
-.dom-status-dot.ausente   { background: var(--accent); }
-.dom-status-dot.rechazado { background: var(--red); }
-.dom-status-dot.inaccesible { background: var(--gray); }
-.dom-status-dot.incompleto  { background: var(--blue); }
-.dom-info { flex: 1; min-width: 0; }
-.dom-dir { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dom-col { font-size: 13px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dom-badge {
-  flex-shrink: 0; font-size: 11px; font-weight: 700; border-radius: 99px;
-  padding: 4px 10px; text-transform: uppercase; letter-spacing: .04em;
-}
-.badge-pendiente  { background: var(--bg4);     color: var(--text2); }
-.badge-visitado   { background: var(--green-bg); color: var(--green); }
-.badge-ausente    { background: var(--acc-bg);   color: var(--accent); }
-.badge-rechazado  { background: var(--red-bg);   color: var(--red); }
-.badge-inaccesible{ background: var(--gray-bg);  color: var(--gray); }
-.badge-incompleto { background: var(--blue-bg);  color: var(--blue); }
-
-.empty-state { text-align: center; padding: 48px 20px; color: var(--text2); }
-.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
-.empty-state p { font-size: 15px; }
-
-/* ===================== FORMULARIO DE VISITA ===================== */
-.dom-header-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 20px;
-}
-.dom-address { font-size: 20px; font-weight: 700; line-height: 1.3; }
-.dom-colonia { font-size: 14px; color: var(--text2); margin-top: 6px; }
-.dom-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.meta-pill {
-  background: var(--bg4); border-radius: 99px;
-  font-size: 12px; color: var(--text1); padding: 5px 12px;
-  font-family: 'DM Mono', monospace;
+.step-btn:active{background:var(--gray-200);}
+.step-val{
+  flex:1;text-align:center;font-size:22px;font-weight:800;
+  color:var(--gray-900);padding:12px;
 }
 
-.form-section { display: flex; flex-direction: column; gap: 14px; }
-.form-label { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; display: block; }
-
-/* ESTATUS BUTTONS - el selector más importante */
-.estatus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.estatus-btn {
-  border: 2px solid var(--border); border-radius: var(--radius-sm);
-  padding: 14px 10px; text-align: center; cursor: pointer;
-  transition: all .15s; background: var(--bg3);
+/* Barra de progreso del formulario */
+.form-progress{
+  background:var(--white);border-bottom:1px solid var(--gray-200);
+  padding:10px 20px;flex-shrink:0;
 }
-.estatus-btn .e-icon { font-size: 28px; display: block; margin-bottom: 6px; }
-.estatus-btn .e-label { font-size: 13px; font-weight: 600; color: var(--text1); }
-.estatus-btn.selected-visitado   { border-color: var(--green); background: var(--green-bg); }
-.estatus-btn.selected-visitado   .e-label { color: var(--green); }
-.estatus-btn.selected-ausente    { border-color: var(--accent); background: var(--acc-bg); }
-.estatus-btn.selected-ausente    .e-label { color: var(--accent); }
-.estatus-btn.selected-rechazado  { border-color: var(--red); background: var(--red-bg); }
-.estatus-btn.selected-rechazado  .e-label { color: var(--red); }
-.estatus-btn.selected-inaccesible{ border-color: var(--gray); background: var(--gray-bg); }
-.estatus-btn.selected-inaccesible .e-label { color: var(--gray); }
-.estatus-btn.selected-incompleto { border-color: var(--blue); background: var(--blue-bg); }
-.estatus-btn.selected-incompleto  .e-label { color: var(--blue); }
-.estatus-btn:active { transform: scale(.97); }
+.form-prog-track{height:4px;background:var(--gray-200);border-radius:99px;overflow:hidden;}
+.form-prog-fill{height:100%;background:var(--orange);border-radius:99px;transition:width .4s ease;}
+.form-prog-label{font-size:11px;font-weight:600;color:var(--gray-400);margin-top:5px;}
 
-/* Campos visibles solo si VISITADO o INCOMPLETO */
-.campos-extra { display: flex; flex-direction: column; gap: 14px; }
-.campos-extra.hidden { display: none; }
-
-.field-input-alt {
-  width: 100%; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text0);
-  font-size: 16px; padding: 14px 16px; transition: border .2s;
+/* BTN GUARDAR */
+.btn-guardar{
+  background:var(--orange);color:white;font-size:17px;font-weight:800;
+  border-radius:var(--radius);padding:20px;width:100%;
+  box-shadow:var(--shadow-lg);transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
 }
-.field-input-alt:focus { border-color: var(--accent); }
+.btn-guardar:active{transform:scale(.98);}
+.btn-guardar:disabled{opacity:.4;}
 
-.num-stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg3); }
-.step-btn { width: 52px; height: 52px; font-size: 22px; font-weight: 300; color: var(--text1); background: var(--bg4); transition: background .15s; flex-shrink: 0; }
-.step-btn:active { background: var(--bg2); }
-.step-val { flex: 1; text-align: center; font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text0); padding: 14px; }
+/* OBSERVACIONES */
+.obs-label{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block;}
 
-.gps-box {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 14px;
-  display: flex; align-items: center; gap: 12px;
+/* TOAST */
+#toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);
+  background:var(--gray-800);color:white;font-size:13px;font-weight:700;
+  padding:13px 24px;border-radius:99px;box-shadow:0 4px 20px rgba(0,0,0,.2);
+  white-space:nowrap;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
 }
-.gps-indicator { width: 10px; height: 10px; border-radius: 50%; background: var(--text2); flex-shrink: 0; }
-.gps-indicator.ok { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,.5); animation: pulse 2s infinite; }
-.gps-indicator.buscando { background: var(--accent); animation: pulse 1s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-.gps-text { flex: 1; font-size: 13px; color: var(--text2); }
-.gps-coords { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text1); }
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.ok{background:var(--green);}
+#toast.err{background:var(--red);}
 
-.obs-textarea {
-  width: 100%; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text0); font-size: 15px;
-  padding: 14px; resize: none; height: 90px; transition: border .2s;
-}
-.obs-textarea:focus { border-color: var(--accent); }
-
-.btn-guardar {
-  background: var(--accent); color: #000; font-size: 18px; font-weight: 700;
-  border-radius: var(--radius); padding: 20px;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: all .15s; box-shadow: 0 4px 24px rgba(245,158,11,.3);
-  margin-top: 8px;
-}
-.btn-guardar:active { transform: scale(.98); }
-.btn-guardar:disabled { opacity: .4; }
-
-/* ===================== TOAST ===================== */
-#toast {
-  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px);
-  background: var(--bg4); border: 1px solid var(--border); color: var(--text0);
-  font-size: 14px; font-weight: 500; padding: 14px 24px; border-radius: 99px;
-  box-shadow: var(--shadow); transition: transform .3s cubic-bezier(.34,1.56,.64,1);
-  white-space: nowrap; z-index: 999;
-}
-#toast.show { transform: translateX(-50%) translateY(0); }
-#toast.success { background: var(--green-bg); border-color: var(--green); color: var(--green); }
-#toast.error   { background: var(--red-bg);   border-color: var(--red);   color: var(--red); }
-
-/* ===================== SYNC INDICATOR ===================== */
-.sync-bar {
-  display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2);
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 10px 14px;
-}
-.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-.sync-dot.pending { background: var(--accent); animation: pulse 1.5s infinite; }
-
-/* ===================== SCROLLBAR ===================== */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+/* UTILS */
+.hidden{display:none!important;}
+.spacer{height:32px;}
 </style>
 </head>
 <body>
 <div id="app">
+<div id="offline-bar">⚠ Sin conexión — guardando localmente</div>
 
-  <!-- OFFLINE BANNER -->
-  <div id="offline-bar">⚠ Sin conexión — los datos se guardan localmente y se sincronizarán al reconectarse</div>
-
-  <!-- ===================== LOGIN ===================== -->
-  <div class="page" id="page-login">
-    <div class="login-logo">
-      <div class="logo-icon">🏠</div>
-      <h1>Levantamiento NL</h1>
-      <p>Monterrey · Nuevo León</p>
-    </div>
-    <div class="login-card">
-      <div class="field-group">
-        <div>
-          <div class="field-label">Folio brigadista</div>
-          <input class="field-input" type="text" id="login-user" placeholder="Ej. BRG-2024-001" autocomplete="username" inputmode="text">
-        </div>
-        <div>
-          <div class="field-label">Contraseña</div>
-          <input class="field-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
-        </div>
-      </div>
-      <button class="btn-primary" id="btn-login" onclick="doLogin()">Entrar al sistema</button>
-      <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:16px">Módulo de campo · EPSG:4326 · v1.0</p>
-    </div>
+<!-- ======= LOGIN ======= -->
+<div class="page" id="page-login">
+  <div class="login-hero">
+    <div class="login-icon">🗳️</div>
+    <div class="login-title">ELECTO</div>
+    <div class="login-sub">Levantamiento domiciliario · Monterrey NL</div>
   </div>
-
-  <!-- ===================== HOME ===================== -->
-  <div class="topbar hidden" id="topbar-home">
-    <div style="flex:1">
-      <div class="topbar-title" id="home-greeting">Buenos días</div>
-      <div class="topbar-sub" id="home-seccion">Sección —</div>
+  <div class="login-card">
+    <div class="field-wrap">
+      <label class="field-label">Folio / Email</label>
+      <input class="field-input" type="text" id="l-user" placeholder="brigadista@electo.mx" autocomplete="username" inputmode="email">
     </div>
-    <div class="topbar-badge" id="home-offline-badge" style="display:none">OFFLINE</div>
-    <button onclick="doLogout()" style="color:var(--text2);font-size:13px;font-weight:600;padding:8px">Salir</button>
+    <div class="field-wrap">
+      <label class="field-label">Contraseña</label>
+      <input class="field-input" type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="btn-login" onclick="doLogin()">Entrar</button>
+    <p style="text-align:center;font-size:11px;color:var(--gray-400);margin-top:16px;font-weight:500;">v2.0 · ELECTO NL 2024</p>
   </div>
+</div>
 
-  <div class="page hidden" id="page-home">
-
-    <!-- Brig info -->
-    <div class="brig-header">
-      <div class="brig-name" id="brig-nombre">Brigadista</div>
-      <div class="brig-meta">Sección <span id="brig-seccion">—</span> · Distrito Federal <span id="brig-distritof">—</span> · Local <span id="brig-distrital">—</span></div>
-      <div style="margin-top:12px">
-        <div class="sync-bar">
-          <div class="sync-dot" id="sync-dot"></div>
-          <span id="sync-text">Sincronizado</span>
+<!-- ======= HOME ======= -->
+<div class="topbar hidden" id="bar-home">
+  <div class="topbar-logo">🗳️</div>
+  <div class="topbar-info">
+    <div class="topbar-title" id="h-greeting">ELECTO</div>
+    <div class="topbar-sub" id="h-meta">Sección —</div>
+  </div>
+  <div class="topbar-right">
+    <div class="badge-offline" id="badge-offline">SIN RED</div>
+    <button onclick="doLogout()" style="font-size:12px;font-weight:700;color:var(--gray-400);padding:8px;">Salir</button>
+  </div>
+</div>
+<div class="page hidden" id="page-home">
+  <div class="page-content">
+    <!-- Header brigadista -->
+    <div class="home-header">
+      <div class="home-brig" id="h-nombre">Brigadista</div>
+      <div class="home-meta" id="h-info">Sección — · Dist. Fed. — · Dist. Loc. —</div>
+      <div class="home-prog">
+        <div class="home-prog-top">
+          <span class="home-prog-label">Avance de hoy</span>
+          <span class="home-prog-pct" id="h-pct">0%</span>
+        </div>
+        <div class="home-prog-track">
+          <div class="home-prog-fill" id="h-bar" style="width:0%"></div>
         </div>
       </div>
     </div>
-
-    <!-- KPIs del día -->
-    <div class="section-title">Tu progreso hoy</div>
-    <div class="kpi-grid">
-      <div class="kpi-card accent"><div class="kpi-num" id="kpi-total">0</div><div class="kpi-label">Total asignados</div></div>
-      <div class="kpi-card green"><div class="kpi-num" id="kpi-visitados">0</div><div class="kpi-label">Contactados</div></div>
-      <div class="kpi-card blue"><div class="kpi-num" id="kpi-ausentes">0</div><div class="kpi-label">Ausentes</div></div>
-      <div class="kpi-card red"><div class="kpi-num" id="kpi-pendientes">0</div><div class="kpi-label">Pendientes</div></div>
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-box"><div class="kpi-box-icon">🏠</div><div class="kpi-box-num orange" id="h-total">0</div><div class="kpi-box-label">Asignados</div></div>
+      <div class="kpi-box"><div class="kpi-box-icon">✅</div><div class="kpi-box-num green" id="h-contact">0</div><div class="kpi-box-label">Contactados</div></div>
+      <div class="kpi-box"><div class="kpi-box-icon">🔶</div><div class="kpi-box-num" style="color:var(--yellow)" id="h-ausentes">0</div><div class="kpi-box-label">Ausentes</div></div>
+      <div class="kpi-box"><div class="kpi-box-icon">⏳</div><div class="kpi-box-num red" id="h-pendientes">0</div><div class="kpi-box-label">Pendientes</div></div>
     </div>
-
-    <!-- Barra de avance -->
-    <div class="progress-block">
-      <div class="prog-header">
-        <div class="prog-title">Avance de sección</div>
-        <div class="prog-pct" id="prog-pct">0%</div>
-      </div>
-      <div class="prog-bar-track"><div class="prog-bar-fill" id="prog-bar" style="width:0%"></div></div>
-      <div class="prog-sub" id="prog-sub">Cargando datos…</div>
+    <!-- Sync -->
+    <div class="sync-row">
+      <div class="sync-dot" id="sync-dot"></div>
+      <div class="sync-text" id="sync-text">Sincronizado</div>
     </div>
-
     <!-- Acciones -->
-    <div class="section-title">Acciones</div>
-    <button class="btn-ruta" onclick="showPage('lista')">📋 Ver ruta de domicilios</button>
-    <button class="btn-secondary" onclick="syncNow()">🔄 Sincronizar ahora</button>
-
+    <div class="section-label">Acciones</div>
+    <button class="btn-ruta" onclick="goPage('lista')">📋 Ver ruta de domicilios</button>
+    <button class="btn-sec" onclick="syncNow()">🔄 Sincronizar</button>
+    <div class="spacer"></div>
   </div>
+</div>
 
-  <!-- ===================== LISTA DOMICILIOS ===================== -->
-  <div class="topbar hidden" id="topbar-lista">
-    <button class="topbar-back" onclick="showPage('home')">‹</button>
-    <div style="flex:1">
-      <div class="topbar-title">Ruta asignada</div>
-      <div class="topbar-sub" id="lista-sub">—</div>
-    </div>
+<!-- ======= LISTA ======= -->
+<div class="topbar hidden" id="bar-lista">
+  <button class="topbar-back" onclick="goPage('home')">‹</button>
+  <div class="topbar-info">
+    <div class="topbar-title">Ruta asignada</div>
+    <div class="topbar-sub" id="lista-meta">— domicilios</div>
   </div>
-
-  <div class="page hidden" id="page-lista">
-    <!-- Búsqueda -->
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="search-input" placeholder="Buscar calle, número, colonia…" oninput="filterDomicilios()">
+</div>
+<div class="page hidden" id="page-lista">
+  <div class="page-content">
+    <div class="search-wrap">
+      <span style="font-size:18px;color:var(--gray-300);">🔍</span>
+      <input type="search" id="s-input" placeholder="Calle, número, colonia…" oninput="renderLista()">
     </div>
-
-    <!-- Filtros por estatus -->
-    <div class="filter-chips">
-      <div class="chip active" data-filter="todos" onclick="setFilter('todos',this)">Todos</div>
-      <div class="chip" data-filter="pendiente" onclick="setFilter('pendiente',this)">⬜ Pendientes</div>
-      <div class="chip" data-filter="visitado" onclick="setFilter('visitado',this)">✅ Contactados</div>
-      <div class="chip" data-filter="ausente" onclick="setFilter('ausente',this)">🔶 Ausentes</div>
-      <div class="chip" data-filter="rechazado" onclick="setFilter('rechazado',this)">🔴 Rechazados</div>
+    <div class="chips">
+      <div class="chip on" data-f="todos" onclick="setChip(this)">Todos</div>
+      <div class="chip" data-f="pendiente" onclick="setChip(this)">⬜ Pendientes</div>
+      <div class="chip" data-f="visitado" onclick="setChip(this)">✅ Contactados</div>
+      <div class="chip" data-f="ausente" onclick="setChip(this)">🔶 Ausentes</div>
+      <div class="chip" data-f="rechazado" onclick="setChip(this)">🚫 Rechazados</div>
     </div>
-
-    <!-- Lista -->
-    <div class="domicilio-list" id="domicilio-list">
-      <div class="empty-state"><div class="icon">📍</div><p>Cargando domicilios…</p></div>
-    </div>
+    <div class="dom-list" id="dom-list"></div>
+    <div class="spacer"></div>
   </div>
+</div>
 
-  <!-- ===================== FORMULARIO VISITA ===================== -->
-  <div class="topbar hidden" id="topbar-form">
-    <button class="topbar-back" onclick="showPage('lista')">‹</button>
-    <div style="flex:1">
-      <div class="topbar-title">Registrar visita</div>
-      <div class="topbar-sub" id="form-folio">Folio —</div>
-    </div>
+<!-- ======= FORMULARIO ======= -->
+<div class="topbar hidden" id="bar-form">
+  <button class="topbar-back" onclick="goPage('lista')">‹</button>
+  <div class="topbar-info">
+    <div class="topbar-title">Registrar visita</div>
+    <div class="topbar-sub" id="f-folio">ID —</div>
   </div>
-
-  <div class="page hidden" id="page-form">
+</div>
+<div class="form-progress hidden" id="form-prog-bar">
+  <div class="form-prog-track"><div class="form-prog-fill" id="form-prog-fill" style="width:0%"></div></div>
+  <div class="form-prog-label" id="form-prog-label">Completa todos los campos</div>
+</div>
+<div class="page hidden" id="page-form">
+  <div class="page-content">
 
     <!-- Dirección -->
-    <div class="dom-header-card">
-      <div class="dom-address" id="form-address">—</div>
-      <div class="dom-colonia" id="form-colonia">—</div>
-      <div class="dom-meta">
-        <div class="meta-pill" id="form-cp">CP —</div>
-        <div class="meta-pill" id="form-sec">Secc. —</div>
-        <div class="meta-pill" id="form-distf">Dist. Fed. —</div>
-        <div class="meta-pill" id="form-distl">Dist. Loc. —</div>
+    <div class="dom-card">
+      <div class="dom-card-dir" id="f-dir">—</div>
+      <div class="dom-card-col" id="f-col">—</div>
+      <div class="dom-pills">
+        <div class="dom-pill" id="f-cp">CP —</div>
+        <div class="dom-pill" id="f-sec">Secc. —</div>
+        <div class="dom-pill" id="f-df">Fed. —</div>
+        <div class="dom-pill" id="f-dl">Loc. —</div>
       </div>
     </div>
 
     <!-- GPS -->
     <div>
-      <label class="form-label">📡 Ubicación GPS</label>
+      <label class="obs-label">📡 Ubicación GPS</label>
       <div class="gps-box">
-        <div class="gps-indicator" id="gps-indicator"></div>
-        <div class="gps-text">
-          <div id="gps-status">Obteniendo ubicación…</div>
+        <div class="gps-led" id="gps-led"></div>
+        <div class="gps-info">
+          <div class="gps-status" id="gps-status">Obteniendo ubicación…</div>
           <div class="gps-coords" id="gps-coords"></div>
         </div>
-        <button onclick="getGPS()" style="color:var(--accent);font-size:13px;font-weight:700;padding:8px">Reintentar</button>
+        <button class="btn-gps-retry" onclick="getGPS()">↻</button>
       </div>
     </div>
 
-    <!-- Estatus -->
+    <!-- Estatus visita -->
     <div>
-      <label class="form-label">Estado de la visita *</label>
+      <label class="obs-label">Estado de la visita *</label>
       <div class="estatus-grid">
-        <div class="estatus-btn" data-estatus="VISITADO" onclick="selectEstatus(this)">
-          <span class="e-icon">✅</span>
-          <span class="e-label">Contactado</span>
-        </div>
-        <div class="estatus-btn" data-estatus="AUSENTE" onclick="selectEstatus(this)">
-          <span class="e-icon">🔶</span>
-          <span class="e-label">Ausente</span>
-        </div>
-        <div class="estatus-btn" data-estatus="RECHAZADO" onclick="selectEstatus(this)">
-          <span class="e-icon">🚫</span>
-          <span class="e-label">Rechazó</span>
-        </div>
-        <div class="estatus-btn" data-estatus="INCOMPLETO" onclick="selectEstatus(this)">
-          <span class="e-icon">📝</span>
-          <span class="e-label">Incompleto</span>
-        </div>
-        <div class="estatus-btn" data-estatus="INACCESIBLE" onclick="selectEstatus(this)" style="grid-column:1/-1">
-          <span class="e-icon">🔒</span>
-          <span class="e-label">Inaccesible / Predio cerrado</span>
+        <div class="est-btn" data-e="VISITADO" onclick="selEst(this)"><span class="est-icon">✅</span><span class="est-label">Contactado</span></div>
+        <div class="est-btn" data-e="AUSENTE" onclick="selEst(this)"><span class="est-icon">🔶</span><span class="est-label">Ausente</span></div>
+        <div class="est-btn" data-e="RECHAZADO" onclick="selEst(this)"><span class="est-icon">🚫</span><span class="est-label">Rechazó</span></div>
+        <div class="est-btn" data-e="INCOMPLETO" onclick="selEst(this)"><span class="est-icon">📝</span><span class="est-label">Incompleto</span></div>
+        <div class="est-btn est-full" data-e="INACCESIBLE" onclick="selEst(this)"><span class="est-icon">🔒</span><span class="est-label">Inaccesible / Predio cerrado</span></div>
+      </div>
+    </div>
+
+    <!-- CONTACTO (solo si VISITADO o INCOMPLETO) -->
+    <div id="sec-contacto" class="hidden">
+      <label class="obs-label">Datos de contacto</label>
+      <div class="contacto-fields">
+        <input class="field-input-sm" type="text" id="f-nombre" placeholder="Nombre de quien atendió" autocomplete="off">
+        <input class="field-input-sm" type="tel" id="f-tel" placeholder="Teléfono (10 dígitos)" inputmode="tel" maxlength="10">
+        <div>
+          <label class="obs-label">Personas en el hogar</label>
+          <div class="stepper">
+            <button class="step-btn" onclick="stepHab(-1)">−</button>
+            <div class="step-val" id="f-hab">1</div>
+            <button class="step-btn" onclick="stepHab(1)">+</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Campos extra solo si Contactado o Incompleto -->
-    <div class="campos-extra hidden" id="campos-extra">
-      <div>
-        <label class="form-label">Nombre de quien atendió</label>
-        <input class="field-input-alt" type="text" id="f-nombre" placeholder="Nombre completo" autocomplete="off">
-      </div>
-      <div>
-        <label class="form-label">Teléfono (opcional)</label>
-        <input class="field-input-alt" type="tel" id="f-tel" placeholder="10 dígitos" inputmode="tel" maxlength="10">
-      </div>
-      <div>
-        <label class="form-label">Personas en el hogar</label>
-        <div class="num-stepper">
-          <button class="step-btn" onclick="stepNum(-1)">−</button>
-          <div class="step-val" id="num-habitantes">1</div>
-          <button class="step-btn" onclick="stepNum(1)">+</button>
+    <!-- INE -->
+    <div id="sec-ine" class="hidden">
+      <div class="ine-row">
+        <div>
+          <div class="ine-label">🪪 Credencial INE vigente</div>
+          <div class="ine-sub">¿Tiene credencial de elector actualizada?</div>
+        </div>
+        <div class="toggle-group">
+          <button class="toggle-btn" id="ine-si" onclick="selINE('si')">Sí</button>
+          <button class="toggle-btn" id="ine-no" onclick="selINE('no')">No</button>
         </div>
       </div>
     </div>
 
-    <!-- Observaciones siempre visible -->
+    <!-- ENCUESTA (solo si VISITADO o INCOMPLETO) -->
+    <div id="sec-encuesta" class="hidden">
+      <label class="obs-label">📋 Encuesta de necesidades</label>
+
+      <!-- P1 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">1</div><div class="form-block-q">¿Cómo califica el servicio de agua potable en su colonia?</div></div>
+        <div class="form-block-body"><div class="opt-row" id="q1">
+          <button class="opt-btn" data-v="Bueno" onclick="selOpt(this,'q1')">Bueno</button>
+          <button class="opt-btn" data-v="Regular" onclick="selOpt(this,'q1')">Regular</button>
+          <button class="opt-btn" data-v="Malo" onclick="selOpt(this,'q1')">Malo</button>
+        </div></div>
+      </div>
+
+      <!-- P2 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">2</div><div class="form-block-q">¿Con qué frecuencia hay cortes de electricidad?</div></div>
+        <div class="form-block-body"><div class="opt-row" id="q2">
+          <button class="opt-btn" data-v="Nunca" onclick="selOpt(this,'q2')">Nunca</button>
+          <button class="opt-btn" data-v="Ocasional" onclick="selOpt(this,'q2')">Ocasional</button>
+          <button class="opt-btn" data-v="Frecuente" onclick="selOpt(this,'q2')">Frecuente</button>
+        </div></div>
+      </div>
+
+      <!-- P3 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">3</div><div class="form-block-q">¿Tiene problemas con la recolección de basura?</div></div>
+        <div class="form-block-body"><div class="yn-row" id="q3">
+          <button class="yn-btn" data-v="Sí" onclick="selYN(this,'q3')">Sí</button>
+          <button class="yn-btn" data-v="No" onclick="selYN(this,'q3')">No</button>
+        </div></div>
+      </div>
+
+      <!-- P4 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">4</div><div class="form-block-q">¿El alumbrado público en su calle funciona correctamente?</div></div>
+        <div class="form-block-body"><div class="opt-row" id="q4">
+          <button class="opt-btn" data-v="Sí" onclick="selOpt(this,'q4')">Sí, funciona bien</button>
+          <button class="opt-btn" data-v="Parcial" onclick="selOpt(this,'q4')">Parcialmente</button>
+          <button class="opt-btn" data-v="No" onclick="selOpt(this,'q4')">No funciona</button>
+        </div></div>
+      </div>
+
+      <!-- P5 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">5</div><div class="form-block-q">¿Las calles y banquetas de su colonia están en buen estado?</div></div>
+        <div class="form-block-body"><div class="opt-row" id="q5">
+          <button class="opt-btn" data-v="Bueno" onclick="selOpt(this,'q5')">Buen estado</button>
+          <button class="opt-btn" data-v="Regular" onclick="selOpt(this,'q5')">Regular</button>
+          <button class="opt-btn" data-v="Malo" onclick="selOpt(this,'q5')">Mal estado</button>
+        </div></div>
+      </div>
+
+      <!-- P6 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">6</div><div class="form-block-q">¿Tiene drenaje y alcantarillado funcionando?</div></div>
+        <div class="form-block-body"><div class="yn-row" id="q6">
+          <button class="yn-btn" data-v="Sí" onclick="selYN(this,'q6')">Sí</button>
+          <button class="yn-btn" data-v="No" onclick="selYN(this,'q6')">No</button>
+        </div></div>
+      </div>
+
+      <!-- P7 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">7</div><div class="form-block-q">¿Considera suficiente el transporte público en su zona?</div></div>
+        <div class="form-block-body"><div class="yn-row" id="q7">
+          <button class="yn-btn" data-v="Sí" onclick="selYN(this,'q7')">Sí</button>
+          <button class="yn-btn" data-v="No" onclick="selYN(this,'q7')">No</button>
+        </div></div>
+      </div>
+
+      <!-- P8 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">8</div><div class="form-block-q">¿Se siente seguro en su colonia?</div></div>
+        <div class="form-block-body"><div class="opt-row" id="q8">
+          <button class="opt-btn" data-v="Sí" onclick="selOpt(this,'q8')">Sí, me siento seguro</button>
+          <button class="opt-btn" data-v="Regular" onclick="selOpt(this,'q8')">Más o menos</button>
+          <button class="opt-btn" data-v="No" onclick="selOpt(this,'q8')">No me siento seguro</button>
+        </div></div>
+      </div>
+
+      <!-- P9 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">9</div><div class="form-block-q">¿Algún integrante del hogar recibe apoyo de programa social?</div></div>
+        <div class="form-block-body"><div class="yn-row" id="q9">
+          <button class="yn-btn" data-v="Sí" onclick="selYN(this,'q9')">Sí</button>
+          <button class="yn-btn" data-v="No" onclick="selYN(this,'q9')">No</button>
+        </div></div>
+      </div>
+
+      <!-- P10 -->
+      <div class="form-block" style="margin-bottom:12px">
+        <div class="form-block-header"><div class="form-block-num">10</div><div class="form-block-q">¿Cuál es la principal necesidad de atención inmediata en su colonia?</div></div>
+        <div class="form-block-body">
+          <textarea class="form-textarea" id="q10" placeholder="Describa la necesidad más urgente…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- OBSERVACIONES -->
     <div>
-      <label class="form-label">Observaciones</label>
-      <textarea class="obs-textarea" id="f-obs" placeholder="Notas adicionales, referencias, situaciones especiales…"></textarea>
+      <label class="obs-label">Observaciones generales</label>
+      <textarea class="form-textarea" id="f-obs" placeholder="Notas adicionales, referencias, situaciones especiales…" style="height:70px"></textarea>
     </div>
 
-    <!-- Botón guardar -->
-    <button class="btn-guardar" id="btn-guardar" onclick="guardarVisita()" disabled>
+    <!-- GUARDAR -->
+    <button class="btn-guardar" id="btn-guardar" onclick="guardar()" disabled>
       💾 Guardar visita
     </button>
-
-    <div style="height:32px"></div>
+    <div class="spacer"></div>
   </div>
-
 </div>
 
-<!-- TOAST -->
+</div><!-- /app -->
 <div id="toast"></div>
 
 <script>
 // =====================================================
-//  ESTADO GLOBAL
+//  CONFIG
 // =====================================================
-const STATE = {
-  brigadista: null,
-  domicilios: [],      // Todos los asignados a su sección
-  visitas: {},         // {identifica: {estatus, ...}}
-  filtro: 'todos',
-  busqueda: '',
-  domActual: null,     // El que se está editando
-  gpsCoords: null,
-  numHab: 1,
-  estatus: null,
-  pendienteSync: 0,
-  online: navigator.onLine
-};
-
-// Config Supabase — reemplazar con tus credenciales reales
-const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
+const SUPABASE_URL = 'https://diudqsydajxrwwqjqefx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpdWRxc3lkYWp4cnd3cWpxZWZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTEyNDIsImV4cCI6MjA5NjQyNzI0Mn0.RI4p52IFx1fnY54wrsIKzdRMNrP3X7LPeTWaUkYNe88';
 
 // =====================================================
-//  DATOS DEMO (se reemplazan con Supabase real)
+//  ESTADO
 // =====================================================
-const DEMO_BRIGADISTA = {
-  nombre: 'María González Reyes',
-  folio: 'BRG-2024-001',
-  seccion: 1045,
-  distrito_f: 6,
-  distrito_l: 3
+const S = {
+  brig: null,
+  doms: [],
+  visitas: {},
+  domActual: null,
+  estatus: null,
+  ine: null,
+  numHab: 1,
+  gps: null,
+  encuesta: {},
+  pendSync: 0,
+  online: navigator.onLine,
+  filtro: 'todos'
 };
 
-// Domicilios de ejemplo (en producción vienen de Supabase filtrados por sección)
-function generateDemoData() {
-  const calles = ['PUERTA DE HIERRO','BOREALIS','AURORA','CIRCUITO NORTE','VIENTO'];
-  const tipos  = ['CALLE','AVENIDA','PRIVADA','CIRCUITO'];
-  const colonias = ['PUERTA DE HIERRO LINCES','LINDA VISTA','DEL PRADO','CUMBRES ELITE'];
-  const dom = [];
-  for (let i = 0; i < 48; i++) {
-    const calle = calles[i % calles.length];
-    const tipo  = tipos[i % tipos.length];
-    dom.push({
-      id: 2668 + i,
-      identifica: 100000 + i,
-      tipovial: tipo,
-      nomvial: calle,
-      numext: String(400 + i * 2),
-      nomasen: colonias[i % colonias.length],
-      cp: '64349',
-      seccion: 1045,
-      distrito_f: 6,
-      distrito_l: 3
-    });
-  }
-  return dom;
+// =====================================================
+//  DATOS DEMO
+// =====================================================
+function demoDoms() {
+  const calles = ['PUERTA DE HIERRO','BOREALIS','AURORA','CIRCUITO NORTE','VIENTO SUR','CEDROS','ROBLE','PINOS'];
+  const colonias = ['PUERTA DE HIERRO','LINDA VISTA','DEL PRADO','CUMBRES ELITE','LOS PINOS'];
+  return Array.from({length:52}, (_,i) => ({
+    id: 1000+i, identifica: 200000+i,
+    tipovial: i%3===0?'AVENIDA':'CALLE',
+    nomvial: calles[i%calles.length],
+    numext: String(100+i*3),
+    nomasen: colonias[i%colonias.length],
+    cp: '64349', seccion:1045, distrito_f:6, distrito_l:3
+  }));
 }
 
 // =====================================================
-//  OFFLINE / ONLINE
+//  OFFLINE
 // =====================================================
-window.addEventListener('online',  () => { STATE.online = true;  updateOfflineBanner(); syncNow(); });
-window.addEventListener('offline', () => { STATE.online = false; updateOfflineBanner(); });
-
-function updateOfflineBanner() {
-  document.getElementById('offline-bar').classList.toggle('visible', !STATE.online);
-  const badge = document.getElementById('home-offline-badge');
-  if (badge) badge.style.display = STATE.online ? 'none' : 'block';
+window.addEventListener('online',  ()=>{ S.online=true;  updateOffline(); syncNow(); });
+window.addEventListener('offline', ()=>{ S.online=false; updateOffline(); });
+function updateOffline(){
+  document.getElementById('offline-bar').classList.toggle('show',!S.online);
+  document.getElementById('badge-offline')?.classList.toggle('show',!S.online);
 }
 
 // =====================================================
 //  NAVEGACIÓN
 // =====================================================
 const PAGES = ['login','home','lista','form'];
-
-function showPage(name) {
-  PAGES.forEach(p => {
-    const page = document.getElementById('page-' + p);
-    const bar  = document.getElementById('topbar-' + p);
-    if (page) page.classList.toggle('hidden', p !== name);
-    if (bar)  bar.classList.toggle('hidden', p !== name);
+function goPage(name){
+  PAGES.forEach(p=>{
+    document.getElementById('page-'+p)?.classList.toggle('hidden',p!==name);
+    document.getElementById('bar-'+p)?.classList.toggle('hidden',p!==name);
   });
-  // Lógica por página
-  if (name === 'home')  refreshHome();
-  if (name === 'lista') renderLista();
-  if (name === 'form')  initForm();
+  document.getElementById('form-prog-bar')?.classList.toggle('hidden',name!=='form');
+  if(name==='home')  refreshHome();
+  if(name==='lista') { document.getElementById('s-input').value=''; renderLista(); }
+  if(name==='form')  initForm();
 }
 
 // =====================================================
 //  LOGIN
 // =====================================================
-function doLogin() {
-  const user = document.getElementById('login-user').value.trim();
-  const pass = document.getElementById('login-pass').value;
+async function doLogin(){
+  const user = document.getElementById('l-user').value.trim();
+  const pass = document.getElementById('l-pass').value;
   const btn  = document.getElementById('btn-login');
+  if(!user||!pass){ toast('Ingresa email y contraseña','err'); return; }
+  btn.disabled=true; btn.textContent='Entrando…';
 
-  if (!user || !pass) { showToast('Ingresa folio y contraseña', 'error'); return; }
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+      body: JSON.stringify({email:user,password:pass})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error_description||'Error de autenticación');
 
-  btn.disabled = true;
-  btn.textContent = 'Entrando…';
+    // Obtener perfil brigadista
+    const pRes = await fetch(`${SUPABASE_URL}/rest/v1/brigadistas?id=eq.${data.user.id}&select=*`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${data.access_token}`}
+    });
+    const perfil = await pRes.json();
 
-  // Demo: cualquier credencial funciona
-  setTimeout(() => {
-    STATE.brigadista = { ...DEMO_BRIGADISTA, folio: user };
-    STATE.domicilios = generateDemoData();
-    // Simular algunas visitas previas
-    STATE.visitas[100003] = { estatus: 'VISITADO',  nombre_contacto: 'Juan López',  num_habitantes: 3 };
-    STATE.visitas[100007] = { estatus: 'AUSENTE',   observaciones: 'Nadie en casa, regreso vespertino' };
-    STATE.visitas[100011] = { estatus: 'RECHAZADO', observaciones: 'No quiso participar' };
-    STATE.visitas[100015] = { estatus: 'VISITADO',  nombre_contacto: 'Ana Martínez', num_habitantes: 2 };
-    STATE.visitas[100019] = { estatus: 'INACCESIBLE', observaciones: 'Predio con reja, sin respuesta' };
+    S.brig = {
+      ...( perfil[0] || {} ),
+      email: user,
+      token: data.access_token,
+      nombre: perfil[0]?.nombre || user.split('@')[0]
+    };
 
-    btn.disabled = false;
-    btn.textContent = 'Entrar al sistema';
-    showPage('home');
-  }, 800);
+    S.doms = demoDoms(); // En producción: cargar por sección
+    goPage('home');
+  } catch(e){
+    // Demo fallback
+    S.brig = { nombre:'Brigadista Demo', seccion:1045, distrito_f:6, distrito_l:3, email:user };
+    S.doms = demoDoms();
+    goPage('home');
+  }
+  btn.disabled=false; btn.textContent='Entrar';
 }
 
-function doLogout() {
-  if (!confirm('¿Cerrar sesión?')) return;
-  STATE.brigadista = null;
-  STATE.domicilios = [];
-  STATE.visitas = {};
-  document.getElementById('login-user').value = '';
-  document.getElementById('login-pass').value = '';
-  showPage('login');
+function doLogout(){
+  if(!confirm('¿Cerrar sesión?')) return;
+  S.brig=null; S.doms=[]; S.visitas={};
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pass').value='';
+  goPage('login');
 }
 
 // =====================================================
 //  HOME
 // =====================================================
-function refreshHome() {
-  const brig = STATE.brigadista;
-  if (!brig) return;
+function refreshHome(){
+  if(!S.brig) return;
+  const h = new Date().getHours();
+  const sal = h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+  document.getElementById('h-greeting').textContent = sal+', '+S.brig.nombre.split(' ')[0];
+  document.getElementById('h-meta').textContent = 'Sección '+S.brig.seccion;
+  document.getElementById('h-nombre').textContent = S.brig.nombre;
+  document.getElementById('h-info').textContent = `Sección ${S.brig.seccion} · Dist. Fed. ${S.brig.distrito_f} · Dist. Loc. ${S.brig.distrito_l}`;
 
-  const hora = new Date().getHours();
-  const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
-  document.getElementById('home-greeting').textContent = saludo + ', ' + brig.nombre.split(' ')[0];
-  document.getElementById('home-seccion').textContent  = 'Sección ' + brig.seccion;
-  document.getElementById('brig-nombre').textContent   = brig.nombre;
-  document.getElementById('brig-seccion').textContent  = brig.seccion;
-  document.getElementById('brig-distritof').textContent = brig.distrito_f;
-  document.getElementById('brig-distrital').textContent  = brig.distrito_l;
+  const total = S.doms.length;
+  const vis   = Object.values(S.visitas);
+  const cont  = vis.filter(v=>v.estatus==='VISITADO').length;
+  const ause  = vis.filter(v=>v.estatus==='AUSENTE').length;
+  const pend  = total - vis.length;
+  const pct   = total ? Math.round(vis.length/total*100) : 0;
 
-  const total  = STATE.domicilios.length;
-  const visits = Object.values(STATE.visitas);
-  const contactados = visits.filter(v => v.estatus === 'VISITADO').length;
-  const ausentes    = visits.filter(v => v.estatus === 'AUSENTE').length;
-  const visitados   = visits.length;
-  const pendientes  = total - visitados;
-  const pct = total ? Math.round(visitados / total * 100) : 0;
+  document.getElementById('h-total').textContent    = total;
+  document.getElementById('h-contact').textContent  = cont;
+  document.getElementById('h-ausentes').textContent = ause;
+  document.getElementById('h-pendientes').textContent = pend;
+  document.getElementById('h-pct').textContent      = pct+'%';
+  document.getElementById('h-bar').style.width      = pct+'%';
+  document.getElementById('lista-meta').textContent = total+' domicilios · Secc. '+S.brig.seccion;
 
-  document.getElementById('kpi-total').textContent     = total;
-  document.getElementById('kpi-visitados').textContent = contactados;
-  document.getElementById('kpi-ausentes').textContent  = ausentes;
-  document.getElementById('kpi-pendientes').textContent = pendientes;
-  document.getElementById('prog-pct').textContent      = pct + '%';
-  document.getElementById('prog-bar').style.width      = pct + '%';
-  document.getElementById('lista-sub').textContent     = total + ' domicilios · Secc. ' + brig.seccion;
-  document.getElementById('prog-sub').textContent      = visitados + ' de ' + total + ' domicilios gestionados · ' + pendientes + ' pendientes';
-
-  const syncDot  = document.getElementById('sync-dot');
-  const syncText = document.getElementById('sync-text');
-  if (STATE.pendienteSync > 0) {
-    syncDot.classList.add('pending');
-    syncText.textContent = STATE.pendienteSync + ' visitas por sincronizar';
-  } else {
-    syncDot.classList.remove('pending');
-    syncText.textContent = 'Sincronizado';
-  }
-
-  updateOfflineBanner();
+  const dot  = document.getElementById('sync-dot');
+  const txt  = document.getElementById('sync-text');
+  if(S.pendSync>0){ dot.classList.add('pending'); txt.textContent=S.pendSync+' visitas por sincronizar'; }
+  else{ dot.classList.remove('pending'); txt.textContent='Sincronizado'; }
+  updateOffline();
 }
 
 // =====================================================
 //  LISTA
 // =====================================================
-let filtroActual = 'todos';
-
-function setFilter(f, el) {
-  filtroActual = f;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  filterDomicilios();
+let filtroActual='todos';
+function setChip(el){
+  filtroActual=el.dataset.f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderLista();
 }
-
-function filterDomicilios() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const list = document.getElementById('domicilio-list');
-
-  let items = STATE.domicilios.filter(d => {
-    const estatus = (STATE.visitas[d.identifica]?.estatus || 'pendiente').toLowerCase();
-    const matchFilter = filtroActual === 'todos' || estatus === filtroActual;
-    const matchSearch = !q ||
-      d.numext?.toLowerCase().includes(q) ||
-      d.nomvial?.toLowerCase().includes(q) ||
-      d.nomasen?.toLowerCase().includes(q) ||
-      d.tipovial?.toLowerCase().includes(q);
-    return matchFilter && matchSearch;
+function renderLista(){
+  const q = document.getElementById('s-input').value.toLowerCase();
+  let items = S.doms.filter(d=>{
+    const est = (S.visitas[d.identifica]?.estatus||'pendiente').toLowerCase();
+    if(filtroActual!=='todos'&&est!==filtroActual) return false;
+    if(q&&!`${d.nomvial} ${d.numext} ${d.nomasen}`.toLowerCase().includes(q)) return false;
+    return true;
   });
-
-  if (!items.length) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Sin resultados para tu búsqueda</p></div>';
+  const list = document.getElementById('dom-list');
+  if(!items.length){
+    list.innerHTML='<div class="empty-msg"><div class="e-icon">🔍</div><p>Sin resultados</p></div>';
     return;
   }
-
-  list.innerHTML = items.map(d => {
-    const v = STATE.visitas[d.identifica];
-    const est = v ? v.estatus.toLowerCase() : 'pendiente';
-    const labels = { pendiente:'Pendiente', visitado:'Contactado', ausente:'Ausente', rechazado:'Rechazó', inaccesible:'Inaccesible', incompleto:'Incompleto' };
-    const tipovial = d.tipovial === 'NINGUNO' ? 'CALLE' : (d.tipovial || 'CALLE');
-    const nomvial  = d.nomvial  === 'NINGUNO' ? ''      : (d.nomvial  || '');
-    const dir = (tipovial + ' ' + nomvial + ' #' + d.numext).trim();
-    return `<div class="dom-card" onclick="openDomicilio(${d.identifica})">
-      <div class="dom-status-dot ${est}"></div>
+  const labels={pendiente:'Pendiente',visitado:'Contactado',ausente:'Ausente',rechazado:'Rechazó',inaccesible:'Inaccesible',incompleto:'Incompleto'};
+  list.innerHTML=items.map(d=>{
+    const v   = S.visitas[d.identifica];
+    const est = v?v.estatus.toLowerCase():'pendiente';
+    const tip = d.tipovial==='NINGUNO'?'CALLE':(d.tipovial||'CALLE');
+    const nom = d.nomvial==='NINGUNO'?'':(d.nomvial||'');
+    const dir = `${tip} ${nom} #${d.numext}`.trim();
+    return `<div class="dom-item ${v?'has-visit '+est:''}" onclick="openDom(${d.identifica})">
+      <div class="dom-dot ${est}"></div>
       <div class="dom-info">
         <div class="dom-dir">${dir}</div>
-        <div class="dom-col">${d.nomasen || '—'}</div>
+        <div class="dom-col">${d.nomasen||'—'}</div>
       </div>
-      <div class="dom-badge badge-${est}">${labels[est] || est}</div>
+      <div class="dom-badge badge-${est}">${labels[est]||est}</div>
     </div>`;
   }).join('');
-}
-
-function renderLista() {
-  document.getElementById('search-input').value = '';
-  filtroActual = 'todos';
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  document.querySelector('.chip[data-filter="todos"]').classList.add('active');
-  filterDomicilios();
 }
 
 // =====================================================
 //  FORMULARIO
 // =====================================================
-function openDomicilio(identifica) {
-  STATE.domActual = STATE.domicilios.find(d => d.identifica === identifica);
-  STATE.estatus   = null;
-  STATE.numHab    = 1;
-  STATE.gpsCoords = null;
-  showPage('form');
+function openDom(identifica){
+  S.domActual = S.doms.find(d=>d.identifica===identifica);
+  S.estatus=null; S.ine=null; S.numHab=1; S.gps=null; S.encuesta={};
+  goPage('form');
 }
 
-function initForm() {
-  const d = STATE.domActual;
-  if (!d) return;
+function initForm(){
+  const d = S.domActual; if(!d) return;
+  const tip = d.tipovial==='NINGUNO'?'CALLE':(d.tipovial||'CALLE');
+  const nom = d.nomvial==='NINGUNO'?'':(d.nomvial||'');
+  document.getElementById('f-folio').textContent  = 'ID '+d.identifica;
+  document.getElementById('f-dir').textContent    = `${tip} ${nom} #${d.numext}`.trim();
+  document.getElementById('f-col').textContent    = d.nomasen||'—';
+  document.getElementById('f-cp').textContent     = 'CP '+(d.cp||'—');
+  document.getElementById('f-sec').textContent    = 'Secc. '+(d.seccion||'—');
+  document.getElementById('f-df').textContent     = 'Fed. '+(d.distrito_f||'—');
+  document.getElementById('f-dl').textContent     = 'Loc. '+(d.distrito_l||'—');
 
-  const tipovial = d.tipovial === 'NINGUNO' ? 'CALLE' : (d.tipovial || 'CALLE');
-  const nomvial  = d.nomvial  === 'NINGUNO' ? '' : (d.nomvial || '');
-  const dir = (tipovial + ' ' + nomvial + ' #' + d.numext).trim();
+  // Limpiar
+  document.querySelectorAll('.est-btn').forEach(b=>b.className=b.className.replace(/sel-\S+/g,'').trim()+'');
+  document.getElementById('sec-contacto').classList.add('hidden');
+  document.getElementById('sec-ine').classList.add('hidden');
+  document.getElementById('sec-encuesta').classList.add('hidden');
+  document.getElementById('f-nombre').value='';
+  document.getElementById('f-tel').value='';
+  document.getElementById('f-obs').value='';
+  document.getElementById('f-hab').textContent='1'; S.numHab=1;
+  document.getElementById('q10').value='';
+  document.getElementById('ine-si').className='toggle-btn';
+  document.getElementById('ine-no').className='toggle-btn';
+  ['q1','q2','q3','q4','q5','q6','q7','q8','q9'].forEach(q=>{
+    document.querySelectorAll(`#${q} .opt-btn, #${q} .yn-btn`).forEach(b=>b.classList.remove('selected','sel-si','sel-no'));
+  });
+  document.getElementById('btn-guardar').disabled=true;
+  updateFormProg();
 
-  document.getElementById('form-folio').textContent   = 'ID ' + d.identifica;
-  document.getElementById('form-address').textContent = dir;
-  document.getElementById('form-colonia').textContent  = d.nomasen || '—';
-  document.getElementById('form-cp').textContent       = 'CP ' + (d.cp || '—');
-  document.getElementById('form-sec').textContent      = 'Secc. ' + (d.seccion || '—');
-  document.getElementById('form-distf').textContent    = 'Dist. Fed. ' + (d.distrito_f || '—');
-  document.getElementById('form-distl').textContent    = 'Dist. Loc. ' + (d.distrito_l || '—');
-
-  // Limpiar selección
-  document.querySelectorAll('.estatus-btn').forEach(b => b.className = 'estatus-btn');
-  document.getElementById('campos-extra').classList.add('hidden');
-  document.getElementById('f-nombre').value = '';
-  document.getElementById('f-tel').value    = '';
-  document.getElementById('f-obs').value    = '';
-  document.getElementById('num-habitantes').textContent = '1';
-  STATE.numHab = 1;
-  STATE.estatus = null;
-  document.getElementById('btn-guardar').disabled = true;
-
-  // Si ya tiene visita, pre-llenar
-  const prev = STATE.visitas[d.identifica];
-  if (prev) {
-    const btn = document.querySelector(`.estatus-btn[data-estatus="${prev.estatus}"]`);
-    if (btn) {
-      selectEstatus(btn);
-      document.getElementById('f-nombre').value = prev.nombre_contacto || '';
-      document.getElementById('f-tel').value    = prev.telefono || '';
-      document.getElementById('f-obs').value    = prev.observaciones || '';
-      if (prev.num_habitantes) {
-        STATE.numHab = prev.num_habitantes;
-        document.getElementById('num-habitantes').textContent = STATE.numHab;
-      }
-    }
+  // Pre-llenar si ya tiene visita
+  const prev = S.visitas[d.identifica];
+  if(prev){
+    const btn = document.querySelector(`.est-btn[data-e="${prev.estatus}"]`);
+    if(btn) selEst(btn);
+    if(prev.nombre_contacto) document.getElementById('f-nombre').value=prev.nombre_contacto;
+    if(prev.telefono) document.getElementById('f-tel').value=prev.telefono;
+    if(prev.observaciones) document.getElementById('f-obs').value=prev.observaciones;
   }
-
   getGPS();
 }
 
-function selectEstatus(el) {
-  document.querySelectorAll('.estatus-btn').forEach(b => {
-    b.className = 'estatus-btn';
-  });
-  const est = el.dataset.estatus;
-  el.classList.add('selected-' + est.toLowerCase());
-  STATE.estatus = est;
-
-  const mostrarCampos = ['VISITADO','INCOMPLETO'].includes(est);
-  document.getElementById('campos-extra').classList.toggle('hidden', !mostrarCampos);
-  document.getElementById('btn-guardar').disabled = false;
+function selEst(el){
+  document.querySelectorAll('.est-btn').forEach(b=>{ b.className=b.className.replace(/\bsel-\S+/g,'').trim(); });
+  const e = el.dataset.e;
+  el.classList.add('sel-'+e);
+  S.estatus=e;
+  const showExtra = ['VISITADO','INCOMPLETO'].includes(e);
+  document.getElementById('sec-contacto').classList.toggle('hidden',!showExtra);
+  document.getElementById('sec-ine').classList.toggle('hidden',!showExtra);
+  document.getElementById('sec-encuesta').classList.toggle('hidden',!showExtra);
+  document.getElementById('btn-guardar').disabled=false;
+  updateFormProg();
 }
 
-function stepNum(delta) {
-  STATE.numHab = Math.max(1, Math.min(20, STATE.numHab + delta));
-  document.getElementById('num-habitantes').textContent = STATE.numHab;
+function selINE(v){
+  S.ine=v;
+  document.getElementById('ine-si').className='toggle-btn'+(v==='si'?' on-si':'');
+  document.getElementById('ine-no').className='toggle-btn'+(v==='no'?' on-no':'');
+  updateFormProg();
 }
 
-function getGPS() {
-  const ind    = document.getElementById('gps-indicator');
-  const status = document.getElementById('gps-status');
-  const coords = document.getElementById('gps-coords');
+function selOpt(el,qid){
+  document.querySelectorAll(`#${qid} .opt-btn`).forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  S.encuesta[qid]=el.dataset.v;
+  updateFormProg();
+}
+function selYN(el,qid){
+  const v=el.dataset.v;
+  document.querySelectorAll(`#${qid} .yn-btn`).forEach(b=>b.classList.remove('sel-si','sel-no'));
+  el.classList.add(v==='Sí'?'sel-si':'sel-no');
+  S.encuesta[qid]=v;
+  updateFormProg();
+}
 
-  ind.className = 'gps-indicator buscando';
-  status.textContent = 'Buscando señal GPS…';
-  coords.textContent = '';
+function stepHab(d){ S.numHab=Math.max(1,Math.min(20,S.numHab+d)); document.getElementById('f-hab').textContent=S.numHab; }
 
-  if (!navigator.geolocation) {
-    ind.className = 'gps-indicator';
-    status.textContent = 'GPS no disponible en este dispositivo';
-    return;
+function updateFormProg(){
+  let filled=0, total=1; // estatus
+  if(S.estatus) filled++;
+  const showExtra = S.estatus&&['VISITADO','INCOMPLETO'].includes(S.estatus);
+  if(showExtra){
+    total+=11; // ine + 10 preguntas
+    if(S.ine) filled++;
+    ['q1','q2','q3','q4','q5','q6','q7','q8','q9'].forEach(q=>{ total++; if(S.encuesta[q]) filled++; });
+    // q10 texto libre no obligatorio
   }
+  const pct = total>0?Math.round(filled/total*100):0;
+  document.getElementById('form-prog-fill').style.width=pct+'%';
+  document.getElementById('form-prog-label').textContent=`${filled} de ${total} campos completados`;
+}
 
+function getGPS(){
+  const led=document.getElementById('gps-led');
+  const st=document.getElementById('gps-status');
+  const co=document.getElementById('gps-coords');
+  led.className='gps-led searching'; st.textContent='Buscando GPS…'; co.textContent='';
+  if(!navigator.geolocation){ led.className='gps-led'; st.textContent='GPS no disponible'; return; }
   navigator.geolocation.getCurrentPosition(
-    pos => {
-      STATE.gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude, precision: pos.coords.accuracy };
-      ind.className = 'gps-indicator ok';
-      status.textContent = 'Ubicación obtenida ✓';
-      coords.textContent = STATE.gpsCoords.lat.toFixed(6) + ', ' + STATE.gpsCoords.lng.toFixed(6) + ' (±' + Math.round(STATE.gpsCoords.precision) + 'm)';
-    },
-    err => {
-      ind.className = 'gps-indicator';
-      status.textContent = 'Sin GPS — se guardará sin coordenada';
-      coords.textContent = '';
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    p=>{ S.gps={lat:p.coords.latitude,lng:p.coords.longitude,prec:p.coords.accuracy};
+      led.className='gps-led ok'; st.textContent='Ubicación obtenida ✓';
+      co.textContent=`${S.gps.lat.toFixed(6)}, ${S.gps.lng.toFixed(6)} (±${Math.round(S.gps.prec)}m)`; },
+    ()=>{ led.className='gps-led'; st.textContent='Sin GPS — se guardará sin coordenada'; },
+    {enableHighAccuracy:true,timeout:12000,maximumAge:30000}
   );
 }
 
-async function guardarVisita() {
-  if (!STATE.estatus) { showToast('Selecciona el estado de la visita', 'error'); return; }
+async function guardar(){
+  if(!S.estatus){ toast('Selecciona el estado de la visita','err'); return; }
+  const btn=document.getElementById('btn-guardar');
+  btn.disabled=true; btn.innerHTML='⏳ Guardando…';
 
-  const btn = document.getElementById('btn-guardar');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Guardando…';
-
-  const domid = STATE.domActual.identifica;
-
-  const visita = {
-    domicilio_identifica: domid,
-    estatus:              STATE.estatus,
-    nombre_contacto:      document.getElementById('f-nombre').value.trim() || null,
-    telefono:             document.getElementById('f-tel').value.trim()    || null,
-    num_habitantes:       STATE.estatus === 'VISITADO' ? STATE.numHab : null,
-    observaciones:        document.getElementById('f-obs').value.trim()   || null,
-    geom_lat:             STATE.gpsCoords?.lat   || null,
-    geom_lng:             STATE.gpsCoords?.lng   || null,
-    precision_gps_m:      STATE.gpsCoords?.precision || null,
-    brigadista_folio:     STATE.brigadista.folio,
-    fecha_visita:         new Date().toISOString(),
-    sincronizado:         false
+  const visita={
+    domicilio_identifica: S.domActual.identifica,
+    estatus: S.estatus,
+    nombre_contacto: document.getElementById('f-nombre').value.trim()||null,
+    telefono: document.getElementById('f-tel').value.trim()||null,
+    num_habitantes: S.estatus==='VISITADO'?S.numHab:null,
+    observaciones: document.getElementById('f-obs').value.trim()||null,
+    ine_vigente: S.ine,
+    encuesta: S.encuesta,
+    q10_necesidad: document.getElementById('q10').value.trim()||null,
+    geom_lat: S.gps?.lat||null,
+    geom_lng: S.gps?.lng||null,
+    precision_gps_m: S.gps?.prec||null,
+    fecha_visita: new Date().toISOString(),
+    sincronizado: false
   };
 
-  // Guardar localmente (demo)
-  STATE.visitas[domid] = visita;
-  STATE.pendienteSync++;
+  S.visitas[S.domActual.identifica]=visita;
+  S.pendSync++;
+  await new Promise(r=>setTimeout(r,500));
+  if(S.online){ S.pendSync=Math.max(0,S.pendSync-1); visita.sincronizado=true; }
 
-  // Intentar sync si hay conexión
-  await new Promise(r => setTimeout(r, 600)); // simula latencia
-
-  if (STATE.online) {
-    // En producción: llamada a Supabase
-    // const { error } = await supabase.from('visitas').upsert({...})
-    STATE.pendienteSync = Math.max(0, STATE.pendienteSync - 1);
-    visita.sincronizado = true;
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '💾 Guardar visita';
-
-  const label = { VISITADO:'Contacto registrado ✓', AUSENTE:'Ausente registrado ✓', RECHAZADO:'Rechazo registrado ✓', INCOMPLETO:'Visita incompleta registrada ✓', INACCESIBLE:'Inaccesible registrado ✓' };
-  showToast(label[STATE.estatus] || 'Guardado ✓', 'success');
-
-  setTimeout(() => showPage('lista'), 800);
+  btn.disabled=false; btn.innerHTML='💾 Guardar visita';
+  const lbl={VISITADO:'✓ Contacto registrado',AUSENTE:'✓ Ausente registrado',RECHAZADO:'✓ Rechazo registrado',INCOMPLETO:'✓ Visita incompleta guardada',INACCESIBLE:'✓ Inaccesible registrado'};
+  toast(lbl[S.estatus]||'Guardado','ok');
+  setTimeout(()=>goPage('lista'),700);
 }
 
-// =====================================================
-//  SYNC
-// =====================================================
-async function syncNow() {
-  if (!STATE.online) { showToast('Sin conexión — sincronización pendiente', 'error'); return; }
-  showToast('Sincronizando…');
-  await new Promise(r => setTimeout(r, 1200));
-  STATE.pendienteSync = 0;
-  showToast('✓ Sincronización completa', 'success');
+async function syncNow(){
+  if(!S.online){ toast('Sin conexión','err'); return; }
+  toast('Sincronizando…');
+  await new Promise(r=>setTimeout(r,1200));
+  S.pendSync=0;
+  toast('✓ Sincronización completa','ok');
   refreshHome();
 }
 
 // =====================================================
 //  TOAST
 // =====================================================
-let toastTimer;
-function showToast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = type ? 'show ' + type : 'show';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.className = '', 2800);
+let tt;
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=(type?'show '+type:'show');
+  clearTimeout(tt); tt=setTimeout(()=>el.className='',2800);
 }
 
 // =====================================================
-//  SERVICE WORKER (registrar)
+//  SW
 // =====================================================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/Electo_/sw.js').catch(() => {});
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
 }
 
-// =====================================================
-//  INICIO
-// =====================================================
-updateOfflineBanner();
-showPage('login');
+updateOffline();
+goPage('login');
 </script>
 </body>
 </html>
