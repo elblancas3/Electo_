@@ -2,7 +2,8 @@
   "name": "Levantamiento Domiciliario NL",
   "short_name": "Levantamiento",
   "description": "Sistema de levantamiento domiciliario en campo para Nuevo León",
-  "start_url": "/",
+  "start_url": "/Electo_/pwa_levantamiento.html",
+  "scope": "/Electo_/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a1018",
@@ -27,7 +28,7 @@
     {
       "name": "Ver ruta del día",
       "short_name": "Mi ruta",
-      "url": "/?page=lista",
+      "url": "/Electo_/pwa_levantamiento.html?page=lista",
       "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>📋</text></svg>", "sizes": "96x96" }]
     }
   ],
