@@ -1051,10 +1051,67 @@ async function guardar(){
     sincronizado: false
   };
 
+  // Guardar localmente
   S.visitas[S.domActual.identifica]=visita;
   S.pendSync++;
-  await new Promise(r=>setTimeout(r,500));
-  if(S.online){ S.pendSync=Math.max(0,S.pendSync-1); visita.sincronizado=true; }
+
+  // Buscar domicilio_id real en Supabase
+  if(S.online){
+    try {
+      // 1. Obtener el id de la tabla domicilios por identifica
+      const dRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/domicilios?identifica=eq.${S.domActual.identifica}&select=id`,
+        { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` }}
+      );
+      const dData = await dRes.json();
+      if(!dData.length) throw new Error('Domicilio no encontrado');
+      const domId = dData[0].id;
+
+      // 2. Construir payload para visitas
+      const payload = {
+        domicilio_id:    domId,
+        estatus:         visita.estatus,
+        nombre_contacto: visita.nombre_contacto,
+        telefono:        visita.telefono,
+        num_habitantes:  visita.num_habitantes,
+        observaciones:   visita.observaciones,
+        ine_vigente:     visita.ine_vigente,
+        encuesta:        visita.encuesta,
+        q10_necesidad:   visita.q10_necesidad,
+        fecha_visita:    visita.fecha_visita,
+        device_id:       localStorage.getItem('device_id')||'PWA-'+Math.random().toString(36).substr(2,6).toUpperCase()
+      };
+
+      // GPS como WKT si existe
+      if(visita.geom_lat && visita.geom_lng){
+        payload.geom_visita = `SRID=4326;POINT(${visita.geom_lng} ${visita.geom_lat})`;
+        payload.precision_gps_m = visita.precision_gps_m;
+      }
+
+      // 3. Upsert (insert o update si ya existe)
+      const vRes = await fetch(`${SUPABASE_URL}/rest/v1/visitas`, {
+        method: 'POST',
+        headers:{
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if(vRes.ok || vRes.status===201 || vRes.status===200){
+        S.pendSync = Math.max(0, S.pendSync-1);
+        visita.sincronizado = true;
+      } else {
+        const err = await vRes.json();
+        console.warn('Error Supabase:', err);
+        toast('Guardado local — sync pendiente','');
+      }
+    } catch(e){
+      console.warn('Sin sync:', e.message);
+    }
+  }
 
   btn.disabled=false; btn.innerHTML='💾 Guardar visita';
   const lbl={VISITADO:'✓ Contacto registrado',AUSENTE:'✓ Ausente registrado',RECHAZADO:'✓ Rechazo registrado',INCOMPLETO:'✓ Visita incompleta guardada',INACCESIBLE:'✓ Inaccesible registrado'};
