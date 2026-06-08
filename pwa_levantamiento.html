@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f1923">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Levantamiento">
+<meta name="description" content="Sistema de levantamiento domiciliario en campo">
+<link rel="manifest" href="manifest.json">
+<title>Levantamiento NL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===================== TOKENS ===================== */
+:root {
+  --bg0:   #0a1018;
+  --bg1:   #0f1923;
+  --bg2:   #162030;
+  --bg3:   #1e2d3e;
+  --bg4:   #253547;
+  --border:#2d4055;
+  --text0: #f0f4f8;
+  --text1: #b8c8d8;
+  --text2: #7a95ae;
+  --accent:#f59e0b;
+  --acc2:  #fbbf24;
+  --acc-bg:#2a1f06;
+  --green: #22c55e;
+  --green-bg:#0a2018;
+  --red:   #ef4444;
+  --red-bg:#200a0a;
+  --blue:  #3b82f6;
+  --blue-bg:#0a1430;
+  --gray:  #64748b;
+  --gray-bg:#14202c;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow: 0 4px 24px rgba(0,0,0,.4);
+}
+
+/* ===================== RESET ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg0); }
+body { font-family: 'DM Sans', sans-serif; color: var(--text0); font-size: 16px; line-height: 1.5; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; outline: none; }
+* { -webkit-overflow-scrolling: touch; }
+
+/* ===================== APP SHELL ===================== */
+#app { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+/* ===================== TOPBAR ===================== */
+.topbar {
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px;
+  min-height: 60px; flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+.topbar-back {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg3); display: flex; align-items: center; justify-content: center;
+  color: var(--text1); font-size: 18px; flex-shrink: 0;
+  transition: background .15s;
+}
+.topbar-back:active { background: var(--bg4); }
+.topbar-title { font-size: 17px; font-weight: 700; flex: 1; }
+.topbar-sub { font-size: 12px; color: var(--text2); font-weight: 400; }
+.topbar-badge {
+  background: var(--acc-bg); color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 20px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px;
+}
+
+/* ===================== OFFLINE BANNER ===================== */
+#offline-bar {
+  background: var(--red-bg); border-bottom: 1px solid var(--red);
+  color: var(--red); font-size: 13px; font-weight: 500;
+  padding: 8px 20px; text-align: center; display: none; flex-shrink: 0;
+}
+#offline-bar.visible { display: block; }
+
+/* ===================== CONTENT SCROLL ===================== */
+.page { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.page.hidden { display: none; }
+
+/* ===================== LOGIN ===================== */
+#page-login {
+  justify-content: center; align-items: center; min-height: 100%;
+  background: radial-gradient(ellipse at 50% 0%, #1a2a3a 0%, var(--bg0) 70%);
+}
+.login-logo {
+  text-align: center; margin-bottom: 32px;
+}
+.login-logo .logo-icon {
+  width: 72px; height: 72px; border-radius: 22px;
+  background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px; margin: 0 auto 16px; box-shadow: 0 8px 32px rgba(245,158,11,.3);
+}
+.login-logo h1 { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+.login-logo p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+.login-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px; width: 100%; max-width: 380px;
+  box-shadow: var(--shadow);
+}
+.field-label { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; letter-spacing: .05em; text-transform: uppercase; }
+.field-input {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text0); font-size: 16px;
+  padding: 14px 16px; transition: border .2s;
+}
+.field-input:focus { border-color: var(--accent); }
+.field-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+.btn-primary {
+  width: 100%; background: var(--accent); color: #000;
+  font-size: 16px; font-weight: 700; border-radius: var(--radius-sm);
+  padding: 16px; transition: all .15s; letter-spacing: .01em;
+}
+.btn-primary:active { transform: scale(.98); background: var(--acc2); }
+.btn-primary:disabled { opacity: .5; }
+
+/* ===================== HOME ===================== */
+.brig-header {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+.brig-name { font-size: 22px; font-weight: 700; }
+.brig-meta { color: var(--text2); font-size: 14px; margin-top: 4px; }
+.brig-meta span { color: var(--accent); font-weight: 600; }
+
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.kpi-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px; text-align: center;
+}
+.kpi-card.accent { background: var(--acc-bg); border-color: rgba(245,158,11,.3); }
+.kpi-card.green  { background: var(--green-bg); border-color: rgba(34,197,94,.25); }
+.kpi-card.red    { background: var(--red-bg); border-color: rgba(239,68,68,.25); }
+.kpi-card.blue   { background: var(--blue-bg); border-color: rgba(59,130,246,.25); }
+.kpi-num { font-size: 36px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
+.kpi-card.accent .kpi-num { color: var(--accent); }
+.kpi-card.green  .kpi-num { color: var(--green); }
+.kpi-card.red    .kpi-num { color: var(--red); }
+.kpi-card.blue   .kpi-num { color: var(--blue); }
+.kpi-label { font-size: 12px; color: var(--text2); font-weight: 500; margin-top: 6px; text-transform: uppercase; letter-spacing: .05em; }
+
+.progress-block {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+.prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.prog-title { font-size: 15px; font-weight: 600; }
+.prog-pct { font-size: 22px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; }
+.prog-bar-track { height: 10px; background: var(--bg4); border-radius: 99px; overflow: hidden; }
+.prog-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--acc2) 100%); border-radius: 99px; transition: width .6s ease; }
+.prog-sub { font-size: 13px; color: var(--text2); margin-top: 10px; }
+
+.section-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .08em; }
+
+.btn-ruta {
+  background: var(--accent); color: #000; font-size: 17px; font-weight: 700;
+  border-radius: var(--radius); padding: 18px; text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .15s; box-shadow: 0 4px 20px rgba(245,158,11,.25);
+}
+.btn-ruta:active { transform: scale(.98); }
+.btn-secondary {
+  background: var(--bg3); color: var(--text0); font-size: 15px; font-weight: 600;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .15s;
+}
+.btn-secondary:active { background: var(--bg4); }
+
+/* ===================== LISTA DOMICILIOS ===================== */
+.search-box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); display: flex; align-items: center;
+  padding: 0 14px; gap: 10px;
+}
+.search-box input {
+  flex: 1; background: none; border: none; color: var(--text0);
+  font-size: 15px; padding: 14px 0;
+}
+.search-box input::placeholder { color: var(--text2); }
+.search-icon { color: var(--text2); font-size: 18px; }
+
+.filter-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.filter-chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text1); font-size: 13px; font-weight: 500;
+  border-radius: 99px; padding: 7px 14px; transition: all .15s; cursor: pointer;
+}
+.chip.active { background: var(--acc-bg); border-color: var(--accent); color: var(--accent); }
+
+.domicilio-list { display: flex; flex-direction: column; gap: 10px; }
+.dom-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  display: flex; align-items: flex-start; gap: 14px;
+  transition: background .15s; cursor: pointer;
+}
+.dom-card:active { background: var(--bg3); }
+.dom-status-dot {
+  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+}
+.dom-status-dot.pendiente { background: var(--border); }
+.dom-status-dot.visitado  { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,.5); }
+.dom-status-dot.ausente   { background: var(--accent); }
+.dom-status-dot.rechazado { background: var(--red); }
+.dom-status-dot.inaccesible { background: var(--gray); }
+.dom-status-dot.incompleto  { background: var(--blue); }
+.dom-info { flex: 1; min-width: 0; }
+.dom-dir { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dom-col { font-size: 13px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dom-badge {
+  flex-shrink: 0; font-size: 11px; font-weight: 700; border-radius: 99px;
+  padding: 4px 10px; text-transform: uppercase; letter-spacing: .04em;
+}
+.badge-pendiente  { background: var(--bg4);     color: var(--text2); }
+.badge-visitado   { background: var(--green-bg); color: var(--green); }
+.badge-ausente    { background: var(--acc-bg);   color: var(--accent); }
+.badge-rechazado  { background: var(--red-bg);   color: var(--red); }
+.badge-inaccesible{ background: var(--gray-bg);  color: var(--gray); }
+.badge-incompleto { background: var(--blue-bg);  color: var(--blue); }
+
+.empty-state { text-align: center; padding: 48px 20px; color: var(--text2); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; }
+
+/* ===================== FORMULARIO DE VISITA ===================== */
+.dom-header-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+.dom-address { font-size: 20px; font-weight: 700; line-height: 1.3; }
+.dom-colonia { font-size: 14px; color: var(--text2); margin-top: 6px; }
+.dom-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.meta-pill {
+  background: var(--bg4); border-radius: 99px;
+  font-size: 12px; color: var(--text1); padding: 5px 12px;
+  font-family: 'DM Mono', monospace;
+}
+
+.form-section { display: flex; flex-direction: column; gap: 14px; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; display: block; }
+
+/* ESTATUS BUTTONS - el selector más importante */
+.estatus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.estatus-btn {
+  border: 2px solid var(--border); border-radius: var(--radius-sm);
+  padding: 14px 10px; text-align: center; cursor: pointer;
+  transition: all .15s; background: var(--bg3);
+}
+.estatus-btn .e-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+.estatus-btn .e-label { font-size: 13px; font-weight: 600; color: var(--text1); }
+.estatus-btn.selected-visitado   { border-color: var(--green); background: var(--green-bg); }
+.estatus-btn.selected-visitado   .e-label { color: var(--green); }
+.estatus-btn.selected-ausente    { border-color: var(--accent); background: var(--acc-bg); }
+.estatus-btn.selected-ausente    .e-label { color: var(--accent); }
+.estatus-btn.selected-rechazado  { border-color: var(--red); background: var(--red-bg); }
+.estatus-btn.selected-rechazado  .e-label { color: var(--red); }
+.estatus-btn.selected-inaccesible{ border-color: var(--gray); background: var(--gray-bg); }
+.estatus-btn.selected-inaccesible .e-label { color: var(--gray); }
+.estatus-btn.selected-incompleto { border-color: var(--blue); background: var(--blue-bg); }
+.estatus-btn.selected-incompleto  .e-label { color: var(--blue); }
+.estatus-btn:active { transform: scale(.97); }
+
+/* Campos visibles solo si VISITADO o INCOMPLETO */
+.campos-extra { display: flex; flex-direction: column; gap: 14px; }
+.campos-extra.hidden { display: none; }
+
+.field-input-alt {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text0);
+  font-size: 16px; padding: 14px 16px; transition: border .2s;
+}
+.field-input-alt:focus { border-color: var(--accent); }
+
+.num-stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg3); }
+.step-btn { width: 52px; height: 52px; font-size: 22px; font-weight: 300; color: var(--text1); background: var(--bg4); transition: background .15s; flex-shrink: 0; }
+.step-btn:active { background: var(--bg2); }
+.step-val { flex: 1; text-align: center; font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text0); padding: 14px; }
+
+.gps-box {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.gps-indicator { width: 10px; height: 10px; border-radius: 50%; background: var(--text2); flex-shrink: 0; }
+.gps-indicator.ok { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,.5); animation: pulse 2s infinite; }
+.gps-indicator.buscando { background: var(--accent); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.gps-text { flex: 1; font-size: 13px; color: var(--text2); }
+.gps-coords { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text1); }
+
+.obs-textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text0); font-size: 15px;
+  padding: 14px; resize: none; height: 90px; transition: border .2s;
+}
+.obs-textarea:focus { border-color: var(--accent); }
+
+.btn-guardar {
+  background: var(--accent); color: #000; font-size: 18px; font-weight: 700;
+  border-radius: var(--radius); padding: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .15s; box-shadow: 0 4px 24px rgba(245,158,11,.3);
+  margin-top: 8px;
+}
+.btn-guardar:active { transform: scale(.98); }
+.btn-guardar:disabled { opacity: .4; }
+
+/* ===================== TOAST ===================== */
+#toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: var(--bg4); border: 1px solid var(--border); color: var(--text0);
+  font-size: 14px; font-weight: 500; padding: 14px 24px; border-radius: 99px;
+  box-shadow: var(--shadow); transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap; z-index: 999;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.success { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+#toast.error   { background: var(--red-bg);   border-color: var(--red);   color: var(--red); }
+
+/* ===================== SYNC INDICATOR ===================== */
+.sync-bar {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2);
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+}
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.sync-dot.pending { background: var(--accent); animation: pulse 1.5s infinite; }
+
+/* ===================== SCROLLBAR ===================== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- OFFLINE BANNER -->
+  <div id="offline-bar">⚠ Sin conexión — los datos se guardan localmente y se sincronizarán al reconectarse</div>
+
+  <!-- ===================== LOGIN ===================== -->
+  <div class="page" id="page-login">
+    <div class="login-logo">
+      <div class="logo-icon">🏠</div>
+      <h1>Levantamiento NL</h1>
+      <p>Monterrey · Nuevo León</p>
+    </div>
+    <div class="login-card">
+      <div class="field-group">
+        <div>
+          <div class="field-label">Folio brigadista</div>
+          <input class="field-input" type="text" id="login-user" placeholder="Ej. BRG-2024-001" autocomplete="username" inputmode="text">
+        </div>
+        <div>
+          <div class="field-label">Contraseña</div>
+          <input class="field-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">Entrar al sistema</button>
+      <p style="text-align:center;font-size:12px;color:var(--text2);margin-top:16px">Módulo de campo · EPSG:4326 · v1.0</p>
+    </div>
+  </div>
+
+  <!-- ===================== HOME ===================== -->
+  <div class="topbar hidden" id="topbar-home">
+    <div style="flex:1">
+      <div class="topbar-title" id="home-greeting">Buenos días</div>
+      <div class="topbar-sub" id="home-seccion">Sección —</div>
+    </div>
+    <div class="topbar-badge" id="home-offline-badge" style="display:none">OFFLINE</div>
+    <button onclick="doLogout()" style="color:var(--text2);font-size:13px;font-weight:600;padding:8px">Salir</button>
+  </div>
+
+  <div class="page hidden" id="page-home">
+
+    <!-- Brig info -->
+    <div class="brig-header">
+      <div class="brig-name" id="brig-nombre">Brigadista</div>
+      <div class="brig-meta">Sección <span id="brig-seccion">—</span> · Distrito Federal <span id="brig-distritof">—</span> · Local <span id="brig-distrital">—</span></div>
+      <div style="margin-top:12px">
+        <div class="sync-bar">
+          <div class="sync-dot" id="sync-dot"></div>
+          <span id="sync-text">Sincronizado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs del día -->
+    <div class="section-title">Tu progreso hoy</div>
+    <div class="kpi-grid">
+      <div class="kpi-card accent"><div class="kpi-num" id="kpi-total">0</div><div class="kpi-label">Total asignados</div></div>
+      <div class="kpi-card green"><div class="kpi-num" id="kpi-visitados">0</div><div class="kpi-label">Contactados</div></div>
+      <div class="kpi-card blue"><div class="kpi-num" id="kpi-ausentes">0</div><div class="kpi-label">Ausentes</div></div>
+      <div class="kpi-card red"><div class="kpi-num" id="kpi-pendientes">0</div><div class="kpi-label">Pendientes</div></div>
+    </div>
+
+    <!-- Barra de avance -->
+    <div class="progress-block">
+      <div class="prog-header">
+        <div class="prog-title">Avance de sección</div>
+        <div class="prog-pct" id="prog-pct">0%</div>
+      </div>
+      <div class="prog-bar-track"><div class="prog-bar-fill" id="prog-bar" style="width:0%"></div></div>
+      <div class="prog-sub" id="prog-sub">Cargando datos…</div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="section-title">Acciones</div>
+    <button class="btn-ruta" onclick="showPage('lista')">📋 Ver ruta de domicilios</button>
+    <button class="btn-secondary" onclick="syncNow()">🔄 Sincronizar ahora</button>
+
+  </div>
+
+  <!-- ===================== LISTA DOMICILIOS ===================== -->
+  <div class="topbar hidden" id="topbar-lista">
+    <button class="topbar-back" onclick="showPage('home')">‹</button>
+    <div style="flex:1">
+      <div class="topbar-title">Ruta asignada</div>
+      <div class="topbar-sub" id="lista-sub">—</div>
+    </div>
+  </div>
+
+  <div class="page hidden" id="page-lista">
+    <!-- Búsqueda -->
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Buscar calle, número, colonia…" oninput="filterDomicilios()">
+    </div>
+
+    <!-- Filtros por estatus -->
+    <div class="filter-chips">
+      <div class="chip active" data-filter="todos" onclick="setFilter('todos',this)">Todos</div>
+      <div class="chip" data-filter="pendiente" onclick="setFilter('pendiente',this)">⬜ Pendientes</div>
+      <div class="chip" data-filter="visitado" onclick="setFilter('visitado',this)">✅ Contactados</div>
+      <div class="chip" data-filter="ausente" onclick="setFilter('ausente',this)">🔶 Ausentes</div>
+      <div class="chip" data-filter="rechazado" onclick="setFilter('rechazado',this)">🔴 Rechazados</div>
+    </div>
+
+    <!-- Lista -->
+    <div class="domicilio-list" id="domicilio-list">
+      <div class="empty-state"><div class="icon">📍</div><p>Cargando domicilios…</p></div>
+    </div>
+  </div>
+
+  <!-- ===================== FORMULARIO VISITA ===================== -->
+  <div class="topbar hidden" id="topbar-form">
+    <button class="topbar-back" onclick="showPage('lista')">‹</button>
+    <div style="flex:1">
+      <div class="topbar-title">Registrar visita</div>
+      <div class="topbar-sub" id="form-folio">Folio —</div>
+    </div>
+  </div>
+
+  <div class="page hidden" id="page-form">
+
+    <!-- Dirección -->
+    <div class="dom-header-card">
+      <div class="dom-address" id="form-address">—</div>
+      <div class="dom-colonia" id="form-colonia">—</div>
+      <div class="dom-meta">
+        <div class="meta-pill" id="form-cp">CP —</div>
+        <div class="meta-pill" id="form-sec">Secc. —</div>
+        <div class="meta-pill" id="form-distf">Dist. Fed. —</div>
+        <div class="meta-pill" id="form-distl">Dist. Loc. —</div>
+      </div>
+    </div>
+
+    <!-- GPS -->
+    <div>
+      <label class="form-label">📡 Ubicación GPS</label>
+      <div class="gps-box">
+        <div class="gps-indicator" id="gps-indicator"></div>
+        <div class="gps-text">
+          <div id="gps-status">Obteniendo ubicación…</div>
+          <div class="gps-coords" id="gps-coords"></div>
+        </div>
+        <button onclick="getGPS()" style="color:var(--accent);font-size:13px;font-weight:700;padding:8px">Reintentar</button>
+      </div>
+    </div>
+
+    <!-- Estatus -->
+    <div>
+      <label class="form-label">Estado de la visita *</label>
+      <div class="estatus-grid">
+        <div class="estatus-btn" data-estatus="VISITADO" onclick="selectEstatus(this)">
+          <span class="e-icon">✅</span>
+          <span class="e-label">Contactado</span>
+        </div>
+        <div class="estatus-btn" data-estatus="AUSENTE" onclick="selectEstatus(this)">
+          <span class="e-icon">🔶</span>
+          <span class="e-label">Ausente</span>
+        </div>
+        <div class="estatus-btn" data-estatus="RECHAZADO" onclick="selectEstatus(this)">
+          <span class="e-icon">🚫</span>
+          <span class="e-label">Rechazó</span>
+        </div>
+        <div class="estatus-btn" data-estatus="INCOMPLETO" onclick="selectEstatus(this)">
+          <span class="e-icon">📝</span>
+          <span class="e-label">Incompleto</span>
+        </div>
+        <div class="estatus-btn" data-estatus="INACCESIBLE" onclick="selectEstatus(this)" style="grid-column:1/-1">
+          <span class="e-icon">🔒</span>
+          <span class="e-label">Inaccesible / Predio cerrado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campos extra solo si Contactado o Incompleto -->
+    <div class="campos-extra hidden" id="campos-extra">
+      <div>
+        <label class="form-label">Nombre de quien atendió</label>
+        <input class="field-input-alt" type="text" id="f-nombre" placeholder="Nombre completo" autocomplete="off">
+      </div>
+      <div>
+        <label class="form-label">Teléfono (opcional)</label>
+        <input class="field-input-alt" type="tel" id="f-tel" placeholder="10 dígitos" inputmode="tel" maxlength="10">
+      </div>
+      <div>
+        <label class="form-label">Personas en el hogar</label>
+        <div class="num-stepper">
+          <button class="step-btn" onclick="stepNum(-1)">−</button>
+          <div class="step-val" id="num-habitantes">1</div>
+          <button class="step-btn" onclick="stepNum(1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Observaciones siempre visible -->
+    <div>
+      <label class="form-label">Observaciones</label>
+      <textarea class="obs-textarea" id="f-obs" placeholder="Notas adicionales, referencias, situaciones especiales…"></textarea>
+    </div>
+
+    <!-- Botón guardar -->
+    <button class="btn-guardar" id="btn-guardar" onclick="guardarVisita()" disabled>
+      💾 Guardar visita
+    </button>
+
+    <div style="height:32px"></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// =====================================================
+//  ESTADO GLOBAL
+// =====================================================
+const STATE = {
+  brigadista: null,
+  domicilios: [],      // Todos los asignados a su sección
+  visitas: {},         // {identifica: {estatus, ...}}
+  filtro: 'todos',
+  busqueda: '',
+  domActual: null,     // El que se está editando
+  gpsCoords: null,
+  numHab: 1,
+  estatus: null,
+  pendienteSync: 0,
+  online: navigator.onLine
+};
+
+// Config Supabase — reemplazar con tus credenciales reales
+const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
+const SUPABASE_KEY = 'TU-ANON-KEY';
+
+// =====================================================
+//  DATOS DEMO (se reemplazan con Supabase real)
+// =====================================================
+const DEMO_BRIGADISTA = {
+  nombre: 'María González Reyes',
+  folio: 'BRG-2024-001',
+  seccion: 1045,
+  distrito_f: 6,
+  distrito_l: 3
+};
+
+// Domicilios de ejemplo (en producción vienen de Supabase filtrados por sección)
+function generateDemoData() {
+  const calles = ['PUERTA DE HIERRO','BOREALIS','AURORA','CIRCUITO NORTE','VIENTO'];
+  const tipos  = ['CALLE','AVENIDA','PRIVADA','CIRCUITO'];
+  const colonias = ['PUERTA DE HIERRO LINCES','LINDA VISTA','DEL PRADO','CUMBRES ELITE'];
+  const dom = [];
+  for (let i = 0; i < 48; i++) {
+    const calle = calles[i % calles.length];
+    const tipo  = tipos[i % tipos.length];
+    dom.push({
+      id: 2668 + i,
+      identifica: 100000 + i,
+      tipovial: tipo,
+      nomvial: calle,
+      numext: String(400 + i * 2),
+      nomasen: colonias[i % colonias.length],
+      cp: '64349',
+      seccion: 1045,
+      distrito_f: 6,
+      distrito_l: 3
+    });
+  }
+  return dom;
+}
+
+// =====================================================
+//  OFFLINE / ONLINE
+// =====================================================
+window.addEventListener('online',  () => { STATE.online = true;  updateOfflineBanner(); syncNow(); });
+window.addEventListener('offline', () => { STATE.online = false; updateOfflineBanner(); });
+
+function updateOfflineBanner() {
+  document.getElementById('offline-bar').classList.toggle('visible', !STATE.online);
+  const badge = document.getElementById('home-offline-badge');
+  if (badge) badge.style.display = STATE.online ? 'none' : 'block';
+}
+
+// =====================================================
+//  NAVEGACIÓN
+// =====================================================
+const PAGES = ['login','home','lista','form'];
+
+function showPage(name) {
+  PAGES.forEach(p => {
+    const page = document.getElementById('page-' + p);
+    const bar  = document.getElementById('topbar-' + p);
+    if (page) page.classList.toggle('hidden', p !== name);
+    if (bar)  bar.classList.toggle('hidden', p !== name);
+  });
+  // Lógica por página
+  if (name === 'home')  refreshHome();
+  if (name === 'lista') renderLista();
+  if (name === 'form')  initForm();
+}
+
+// =====================================================
+//  LOGIN
+// =====================================================
+function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn  = document.getElementById('btn-login');
+
+  if (!user || !pass) { showToast('Ingresa folio y contraseña', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando…';
+
+  // Demo: cualquier credencial funciona
+  setTimeout(() => {
+    STATE.brigadista = { ...DEMO_BRIGADISTA, folio: user };
+    STATE.domicilios = generateDemoData();
+    // Simular algunas visitas previas
+    STATE.visitas[100003] = { estatus: 'VISITADO',  nombre_contacto: 'Juan López',  num_habitantes: 3 };
+    STATE.visitas[100007] = { estatus: 'AUSENTE',   observaciones: 'Nadie en casa, regreso vespertino' };
+    STATE.visitas[100011] = { estatus: 'RECHAZADO', observaciones: 'No quiso participar' };
+    STATE.visitas[100015] = { estatus: 'VISITADO',  nombre_contacto: 'Ana Martínez', num_habitantes: 2 };
+    STATE.visitas[100019] = { estatus: 'INACCESIBLE', observaciones: 'Predio con reja, sin respuesta' };
+
+    btn.disabled = false;
+    btn.textContent = 'Entrar al sistema';
+    showPage('home');
+  }, 800);
+}
+
+function doLogout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  STATE.brigadista = null;
+  STATE.domicilios = [];
+  STATE.visitas = {};
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  showPage('login');
+}
+
+// =====================================================
+//  HOME
+// =====================================================
+function refreshHome() {
+  const brig = STATE.brigadista;
+  if (!brig) return;
+
+  const hora = new Date().getHours();
+  const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+  document.getElementById('home-greeting').textContent = saludo + ', ' + brig.nombre.split(' ')[0];
+  document.getElementById('home-seccion').textContent  = 'Sección ' + brig.seccion;
+  document.getElementById('brig-nombre').textContent   = brig.nombre;
+  document.getElementById('brig-seccion').textContent  = brig.seccion;
+  document.getElementById('brig-distritof').textContent = brig.distrito_f;
+  document.getElementById('brig-distrital').textContent  = brig.distrito_l;
+
+  const total  = STATE.domicilios.length;
+  const visits = Object.values(STATE.visitas);
+  const contactados = visits.filter(v => v.estatus === 'VISITADO').length;
+  const ausentes    = visits.filter(v => v.estatus === 'AUSENTE').length;
+  const visitados   = visits.length;
+  const pendientes  = total - visitados;
+  const pct = total ? Math.round(visitados / total * 100) : 0;
+
+  document.getElementById('kpi-total').textContent     = total;
+  document.getElementById('kpi-visitados').textContent = contactados;
+  document.getElementById('kpi-ausentes').textContent  = ausentes;
+  document.getElementById('kpi-pendientes').textContent = pendientes;
+  document.getElementById('prog-pct').textContent      = pct + '%';
+  document.getElementById('prog-bar').style.width      = pct + '%';
+  document.getElementById('lista-sub').textContent     = total + ' domicilios · Secc. ' + brig.seccion;
+  document.getElementById('prog-sub').textContent      = visitados + ' de ' + total + ' domicilios gestionados · ' + pendientes + ' pendientes';
+
+  const syncDot  = document.getElementById('sync-dot');
+  const syncText = document.getElementById('sync-text');
+  if (STATE.pendienteSync > 0) {
+    syncDot.classList.add('pending');
+    syncText.textContent = STATE.pendienteSync + ' visitas por sincronizar';
+  } else {
+    syncDot.classList.remove('pending');
+    syncText.textContent = 'Sincronizado';
+  }
+
+  updateOfflineBanner();
+}
+
+// =====================================================
+//  LISTA
+// =====================================================
+let filtroActual = 'todos';
+
+function setFilter(f, el) {
+  filtroActual = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterDomicilios();
+}
+
+function filterDomicilios() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const list = document.getElementById('domicilio-list');
+
+  let items = STATE.domicilios.filter(d => {
+    const estatus = (STATE.visitas[d.identifica]?.estatus || 'pendiente').toLowerCase();
+    const matchFilter = filtroActual === 'todos' || estatus === filtroActual;
+    const matchSearch = !q ||
+      d.numext?.toLowerCase().includes(q) ||
+      d.nomvial?.toLowerCase().includes(q) ||
+      d.nomasen?.toLowerCase().includes(q) ||
+      d.tipovial?.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+
+  if (!items.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Sin resultados para tu búsqueda</p></div>';
+    return;
+  }
+
+  list.innerHTML = items.map(d => {
+    const v = STATE.visitas[d.identifica];
+    const est = v ? v.estatus.toLowerCase() : 'pendiente';
+    const labels = { pendiente:'Pendiente', visitado:'Contactado', ausente:'Ausente', rechazado:'Rechazó', inaccesible:'Inaccesible', incompleto:'Incompleto' };
+    const tipovial = d.tipovial === 'NINGUNO' ? 'CALLE' : (d.tipovial || 'CALLE');
+    const nomvial  = d.nomvial  === 'NINGUNO' ? ''      : (d.nomvial  || '');
+    const dir = (tipovial + ' ' + nomvial + ' #' + d.numext).trim();
+    return `<div class="dom-card" onclick="openDomicilio(${d.identifica})">
+      <div class="dom-status-dot ${est}"></div>
+      <div class="dom-info">
+        <div class="dom-dir">${dir}</div>
+        <div class="dom-col">${d.nomasen || '—'}</div>
+      </div>
+      <div class="dom-badge badge-${est}">${labels[est] || est}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderLista() {
+  document.getElementById('search-input').value = '';
+  filtroActual = 'todos';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('.chip[data-filter="todos"]').classList.add('active');
+  filterDomicilios();
+}
+
+// =====================================================
+//  FORMULARIO
+// =====================================================
+function openDomicilio(identifica) {
+  STATE.domActual = STATE.domicilios.find(d => d.identifica === identifica);
+  STATE.estatus   = null;
+  STATE.numHab    = 1;
+  STATE.gpsCoords = null;
+  showPage('form');
+}
+
+function initForm() {
+  const d = STATE.domActual;
+  if (!d) return;
+
+  const tipovial = d.tipovial === 'NINGUNO' ? 'CALLE' : (d.tipovial || 'CALLE');
+  const nomvial  = d.nomvial  === 'NINGUNO' ? '' : (d.nomvial || '');
+  const dir = (tipovial + ' ' + nomvial + ' #' + d.numext).trim();
+
+  document.getElementById('form-folio').textContent   = 'ID ' + d.identifica;
+  document.getElementById('form-address').textContent = dir;
+  document.getElementById('form-colonia').textContent  = d.nomasen || '—';
+  document.getElementById('form-cp').textContent       = 'CP ' + (d.cp || '—');
+  document.getElementById('form-sec').textContent      = 'Secc. ' + (d.seccion || '—');
+  document.getElementById('form-distf').textContent    = 'Dist. Fed. ' + (d.distrito_f || '—');
+  document.getElementById('form-distl').textContent    = 'Dist. Loc. ' + (d.distrito_l || '—');
+
+  // Limpiar selección
+  document.querySelectorAll('.estatus-btn').forEach(b => b.className = 'estatus-btn');
+  document.getElementById('campos-extra').classList.add('hidden');
+  document.getElementById('f-nombre').value = '';
+  document.getElementById('f-tel').value    = '';
+  document.getElementById('f-obs').value    = '';
+  document.getElementById('num-habitantes').textContent = '1';
+  STATE.numHab = 1;
+  STATE.estatus = null;
+  document.getElementById('btn-guardar').disabled = true;
+
+  // Si ya tiene visita, pre-llenar
+  const prev = STATE.visitas[d.identifica];
+  if (prev) {
+    const btn = document.querySelector(`.estatus-btn[data-estatus="${prev.estatus}"]`);
+    if (btn) {
+      selectEstatus(btn);
+      document.getElementById('f-nombre').value = prev.nombre_contacto || '';
+      document.getElementById('f-tel').value    = prev.telefono || '';
+      document.getElementById('f-obs').value    = prev.observaciones || '';
+      if (prev.num_habitantes) {
+        STATE.numHab = prev.num_habitantes;
+        document.getElementById('num-habitantes').textContent = STATE.numHab;
+      }
+    }
+  }
+
+  getGPS();
+}
+
+function selectEstatus(el) {
+  document.querySelectorAll('.estatus-btn').forEach(b => {
+    b.className = 'estatus-btn';
+  });
+  const est = el.dataset.estatus;
+  el.classList.add('selected-' + est.toLowerCase());
+  STATE.estatus = est;
+
+  const mostrarCampos = ['VISITADO','INCOMPLETO'].includes(est);
+  document.getElementById('campos-extra').classList.toggle('hidden', !mostrarCampos);
+  document.getElementById('btn-guardar').disabled = false;
+}
+
+function stepNum(delta) {
+  STATE.numHab = Math.max(1, Math.min(20, STATE.numHab + delta));
+  document.getElementById('num-habitantes').textContent = STATE.numHab;
+}
+
+function getGPS() {
+  const ind    = document.getElementById('gps-indicator');
+  const status = document.getElementById('gps-status');
+  const coords = document.getElementById('gps-coords');
+
+  ind.className = 'gps-indicator buscando';
+  status.textContent = 'Buscando señal GPS…';
+  coords.textContent = '';
+
+  if (!navigator.geolocation) {
+    ind.className = 'gps-indicator';
+    status.textContent = 'GPS no disponible en este dispositivo';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      STATE.gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude, precision: pos.coords.accuracy };
+      ind.className = 'gps-indicator ok';
+      status.textContent = 'Ubicación obtenida ✓';
+      coords.textContent = STATE.gpsCoords.lat.toFixed(6) + ', ' + STATE.gpsCoords.lng.toFixed(6) + ' (±' + Math.round(STATE.gpsCoords.precision) + 'm)';
+    },
+    err => {
+      ind.className = 'gps-indicator';
+      status.textContent = 'Sin GPS — se guardará sin coordenada';
+      coords.textContent = '';
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
+}
+
+async function guardarVisita() {
+  if (!STATE.estatus) { showToast('Selecciona el estado de la visita', 'error'); return; }
+
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Guardando…';
+
+  const domid = STATE.domActual.identifica;
+
+  const visita = {
+    domicilio_identifica: domid,
+    estatus:              STATE.estatus,
+    nombre_contacto:      document.getElementById('f-nombre').value.trim() || null,
+    telefono:             document.getElementById('f-tel').value.trim()    || null,
+    num_habitantes:       STATE.estatus === 'VISITADO' ? STATE.numHab : null,
+    observaciones:        document.getElementById('f-obs').value.trim()   || null,
+    geom_lat:             STATE.gpsCoords?.lat   || null,
+    geom_lng:             STATE.gpsCoords?.lng   || null,
+    precision_gps_m:      STATE.gpsCoords?.precision || null,
+    brigadista_folio:     STATE.brigadista.folio,
+    fecha_visita:         new Date().toISOString(),
+    sincronizado:         false
+  };
+
+  // Guardar localmente (demo)
+  STATE.visitas[domid] = visita;
+  STATE.pendienteSync++;
+
+  // Intentar sync si hay conexión
+  await new Promise(r => setTimeout(r, 600)); // simula latencia
+
+  if (STATE.online) {
+    // En producción: llamada a Supabase
+    // const { error } = await supabase.from('visitas').upsert({...})
+    STATE.pendienteSync = Math.max(0, STATE.pendienteSync - 1);
+    visita.sincronizado = true;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '💾 Guardar visita';
+
+  const label = { VISITADO:'Contacto registrado ✓', AUSENTE:'Ausente registrado ✓', RECHAZADO:'Rechazo registrado ✓', INCOMPLETO:'Visita incompleta registrada ✓', INACCESIBLE:'Inaccesible registrado ✓' };
+  showToast(label[STATE.estatus] || 'Guardado ✓', 'success');
+
+  setTimeout(() => showPage('lista'), 800);
+}
+
+// =====================================================
+//  SYNC
+// =====================================================
+async function syncNow() {
+  if (!STATE.online) { showToast('Sin conexión — sincronización pendiente', 'error'); return; }
+  showToast('Sincronizando…');
+  await new Promise(r => setTimeout(r, 1200));
+  STATE.pendienteSync = 0;
+  showToast('✓ Sincronización completa', 'success');
+  refreshHome();
+}
+
+// =====================================================
+//  TOAST
+// =====================================================
+let toastTimer;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type ? 'show ' + type : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 2800);
+}
+
+// =====================================================
+//  SERVICE WORKER (registrar)
+// =====================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// =====================================================
+//  INICIO
+// =====================================================
+updateOfflineBanner();
+showPage('login');
+</script>
+</body>
+</html>

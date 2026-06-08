@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero Levantamiento NL · ELECTO</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --orange-50:  #fff7ed;
+  --orange-100: #ffedd5;
+  --orange-200: #fed7aa;
+  --orange-300: #fdba74;
+  --orange-400: #fb923c;
+  --orange-500: #f97316;
+  --orange-600: #ea580c;
+  --orange-700: #c2410c;
+  --orange-800: #9a3412;
+  --gray-50:  #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --green:  #22c55e;
+  --blue:   #3b82f6;
+  --red:    #ef4444;
+  --yellow: #eab308;
+  --white:  #ffffff;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow: 0 4px 24px rgba(249,115,22,.10);
+  --shadow-lg: 0 8px 40px rgba(249,115,22,.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  min-height: 100vh;
+}
+
+/* ======= TOPBAR ======= */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 32px;
+  height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.topbar-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.topbar-logo {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--orange-500), var(--orange-700));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; box-shadow: 0 4px 12px rgba(249,115,22,.3);
+}
+.topbar-title { font-size: 18px; font-weight: 800; color: var(--gray-900); letter-spacing: -.3px; }
+.topbar-sub { font-size: 12px; font-weight: 500; color: var(--gray-400); }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.live-dot {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--green);
+}
+.live-dot::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.2)} }
+
+.last-update { font-size: 12px; color: var(--gray-400); font-weight: 500; }
+.btn-refresh {
+  background: var(--orange-500); color: white; border: none;
+  border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight: 700;
+  font-family: 'Montserrat', sans-serif; cursor: pointer;
+  transition: all .2s; display: flex; align-items: center; gap: 6px;
+}
+.btn-refresh:hover { background: var(--orange-600); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(249,115,22,.3); }
+
+/* ======= LAYOUT ======= */
+.main { max-width: 1400px; margin: 0 auto; padding: 28px 32px 48px; }
+
+/* ======= FILTROS ======= */
+.filtros-bar {
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px 24px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  border: 1px solid var(--gray-200);
+}
+.filtro-group { display: flex; flex-direction: column; gap: 5px; }
+.filtro-label { font-size: 11px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .08em; }
+.filtro-select {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm); color: var(--gray-800);
+  font-size: 13px; font-weight: 600; padding: 8px 32px 8px 12px;
+  cursor: pointer; outline: none; transition: border .2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+.filtro-select:focus { border-color: var(--orange-400); }
+.filtro-search {
+  flex: 1; min-width: 200px;
+  background: var(--gray-50); border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm); color: var(--gray-800);
+  font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 500;
+  padding: 8px 12px; outline: none; transition: border .2s;
+}
+.filtro-search:focus { border-color: var(--orange-400); }
+.filtro-search::placeholder { color: var(--gray-400); }
+.btn-limpiar {
+  background: var(--gray-100); border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm); color: var(--gray-500);
+  font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700;
+  padding: 8px 14px; cursor: pointer; transition: all .2s;
+}
+.btn-limpiar:hover { background: var(--gray-200); color: var(--gray-700); }
+
+/* ======= KPI CARDS GLOBALES ======= */
+.kpi-global-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 16px; margin-bottom: 24px;
+}
+
+.kpi-hero {
+  background: linear-gradient(135deg, var(--orange-500) 0%, var(--orange-700) 100%);
+  border-radius: var(--radius); padding: 28px;
+  color: white; position: relative; overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+.kpi-hero::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: rgba(255,255,255,.1);
+}
+.kpi-hero::after {
+  content: ''; position: absolute; bottom: -60px; right: 40px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,.06);
+}
+.kpi-hero-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; opacity: .8; margin-bottom: 8px; }
+.kpi-hero-num { font-size: 56px; font-weight: 900; line-height: 1; letter-spacing: -2px; margin-bottom: 4px; }
+.kpi-hero-sub { font-size: 14px; opacity: .85; font-weight: 500; }
+.kpi-hero-bar { margin-top: 20px; }
+.kpi-hero-bar-track { height: 8px; background: rgba(255,255,255,.25); border-radius: 99px; overflow: hidden; }
+.kpi-hero-bar-fill { height: 100%; background: white; border-radius: 99px; transition: width 1s ease; }
+.kpi-hero-bar-label { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; opacity: .8; font-weight: 600; }
+
+.kpi-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 22px; display: flex; flex-direction: column; justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0,0,0,.05); border: 1px solid var(--gray-100);
+  transition: transform .2s, box-shadow .2s; cursor: default;
+  position: relative; overflow: hidden;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.10); }
+.kpi-card-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin-bottom: 14px;
+}
+.kpi-card-icon.orange { background: var(--orange-100); }
+.kpi-card-icon.green  { background: #dcfce7; }
+.kpi-card-icon.blue   { background: #dbeafe; }
+.kpi-card-icon.red    { background: #fee2e2; }
+.kpi-card-label { font-size: 12px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+.kpi-card-num { font-size: 32px; font-weight: 900; color: var(--gray-900); letter-spacing: -1px; }
+.kpi-card-num.orange { color: var(--orange-500); }
+.kpi-card-num.green  { color: var(--green); }
+.kpi-card-num.blue   { color: var(--blue); }
+.kpi-card-num.red    { color: var(--red); }
+.kpi-card-delta { font-size: 12px; font-weight: 600; color: var(--gray-400); margin-top: 4px; }
+
+/* ======= SECCIÓN CHARTS ======= */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.chart-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  border: 1px solid var(--gray-100);
+}
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.chart-title { font-size: 15px; font-weight: 800; color: var(--gray-900); }
+.chart-sub { font-size: 12px; color: var(--gray-400); font-weight: 500; margin-top: 2px; }
+.chart-canvas-wrap { position: relative; height: 240px; }
+
+/* ======= TABLA SECCIONES ======= */
+.tabla-card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: 0 2px 12px rgba(0,0,0,.05); border: 1px solid var(--gray-100);
+  overflow: hidden; margin-bottom: 24px;
+}
+.tabla-header {
+  padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--gray-100);
+}
+.tabla-title { font-size: 15px; font-weight: 800; color: var(--gray-900); }
+.tabla-count { font-size: 13px; font-weight: 600; color: var(--gray-400); }
+.tabla-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  background: var(--gray-50); padding: 12px 16px;
+  font-size: 11px; font-weight: 700; color: var(--gray-400);
+  text-transform: uppercase; letter-spacing: .08em;
+  text-align: left; white-space: nowrap; border-bottom: 1px solid var(--gray-200);
+}
+thead th.right { text-align: right; }
+tbody tr { border-bottom: 1px solid var(--gray-100); transition: background .15s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--orange-50); }
+tbody td { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--gray-700); white-space: nowrap; }
+tbody td.right { text-align: right; }
+tbody td.mono { font-weight: 700; color: var(--gray-900); }
+
+.badge-estado {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 99px; padding: 4px 10px; font-size: 11px; font-weight: 700;
+}
+.badge-ok      { background: #dcfce7; color: #15803d; }
+.badge-medio   { background: var(--orange-100); color: var(--orange-700); }
+.badge-bajo    { background: #fee2e2; color: #b91c1c; }
+
+.pct-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.pct-bar-track { flex: 1; height: 8px; background: var(--gray-100); border-radius: 99px; overflow: hidden; min-width: 80px; }
+.pct-bar-fill { height: 100%; border-radius: 99px; transition: width .8s ease; }
+.pct-bar-fill.ok    { background: var(--green); }
+.pct-bar-fill.medio { background: var(--orange-400); }
+.pct-bar-fill.bajo  { background: var(--red); }
+.pct-label { font-size: 13px; font-weight: 800; min-width: 40px; text-align: right; }
+.pct-label.ok    { color: var(--green); }
+.pct-label.medio { color: var(--orange-500); }
+.pct-label.bajo  { color: var(--red); }
+
+/* ======= DISTRITOS GRID ======= */
+.distritos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.distrito-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  border: 1px solid var(--gray-100); border-left: 4px solid var(--orange-400);
+  transition: transform .2s;
+}
+.distrito-card:hover { transform: translateY(-2px); }
+.distrito-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.distrito-nombre { font-size: 14px; font-weight: 800; color: var(--gray-900); }
+.distrito-meta { font-size: 12px; color: var(--gray-400); font-weight: 500; margin-top: 2px; }
+.distrito-pct { font-size: 28px; font-weight: 900; color: var(--orange-500); letter-spacing: -1px; }
+.distrito-bar-track { height: 10px; background: var(--gray-100); border-radius: 99px; overflow: hidden; margin-bottom: 14px; }
+.distrito-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange-400), var(--orange-600)); border-radius: 99px; transition: width 1s ease; }
+.distrito-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.dst-stat { text-align: center; background: var(--gray-50); border-radius: 10px; padding: 10px 6px; }
+.dst-stat-num { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+.dst-stat-label { font-size: 10px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+/* ======= PAGINACIÓN ======= */
+.paginacion { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid var(--gray-100); }
+.pag-info { font-size: 13px; color: var(--gray-400); font-weight: 500; }
+.pag-btns { display: flex; gap: 6px; }
+.pag-btn {
+  width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--gray-200);
+  background: white; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--gray-600); cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pag-btn:hover { border-color: var(--orange-400); color: var(--orange-500); }
+.pag-btn.active { background: var(--orange-500); border-color: var(--orange-500); color: white; }
+.pag-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ======= ALERTAS ======= */
+.alertas-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  border: 1px solid var(--gray-100); margin-bottom: 24px;
+}
+.alertas-title { font-size: 15px; font-weight: 800; color: var(--gray-900); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px; }
+.alertas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.alerta-item {
+  background: #fff7ed; border: 1.5px solid var(--orange-200);
+  border-radius: var(--radius-sm); padding: 14px;
+}
+.alerta-sec { font-size: 15px; font-weight: 800; color: var(--orange-700); }
+.alerta-dom { font-size: 12px; color: var(--gray-500); font-weight: 500; margin-top: 2px; }
+.alerta-pct { font-size: 22px; font-weight: 900; color: var(--red); margin-top: 6px; }
+
+/* ======= FOOTER ======= */
+.footer { text-align: center; padding: 24px; font-size: 12px; color: var(--gray-400); font-weight: 500; }
+
+/* ======= ANIMATIONS ======= */
+.fade-in { animation: fadeIn .4s ease both; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.fade-in-1 { animation-delay: .05s; }
+.fade-in-2 { animation-delay: .10s; }
+.fade-in-3 { animation-delay: .15s; }
+.fade-in-4 { animation-delay: .20s; }
+.fade-in-5 { animation-delay: .25s; }
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 1100px) {
+  .kpi-global-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .kpi-hero { grid-column: 1 / -1; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .distritos-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .main { padding: 16px; }
+  .topbar { padding: 0 16px; }
+  .kpi-global-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">🗳️</div>
+    <div>
+      <div class="topbar-title">ELECTO · Levantamiento NL</div>
+      <div class="topbar-sub">Monterrey, Nuevo León · 404,166 domicilios</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot">En vivo</div>
+    <div class="last-update" id="last-update">Actualizado: —</div>
+    <button class="btn-refresh" onclick="cargarDatos()">↻ Actualizar</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- FILTROS -->
+  <div class="filtros-bar fade-in">
+    <div class="filtro-group">
+      <div class="filtro-label">Distrito Federal</div>
+      <select class="filtro-select" id="fil-df" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option value="5">Distrito 5</option>
+        <option value="6">Distrito 6</option>
+        <option value="10">Distrito 10</option>
+      </select>
+    </div>
+    <div class="filtro-group">
+      <div class="filtro-label">Distrito Local</div>
+      <select class="filtro-select" id="fil-dl" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option value="1">Distrito 1</option>
+        <option value="2">Distrito 2</option>
+        <option value="3">Distrito 3</option>
+        <option value="6">Distrito 6</option>
+        <option value="8">Distrito 8</option>
+      </select>
+    </div>
+    <div class="filtro-group">
+      <div class="filtro-label">Estatus</div>
+      <select class="filtro-select" id="fil-estatus" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option value="ok">≥ 75% avance</option>
+        <option value="medio">25–74% avance</option>
+        <option value="bajo">&lt; 25% avance</option>
+      </select>
+    </div>
+    <div class="filtro-group" style="flex:1">
+      <div class="filtro-label">Buscar sección</div>
+      <input class="filtro-search" type="text" id="fil-buscar" placeholder="Número de sección…" oninput="aplicarFiltros()">
+    </div>
+    <button class="btn-limpiar" onclick="limpiarFiltros()">✕ Limpiar</button>
+  </div>
+
+  <!-- KPIs GLOBALES -->
+  <div class="kpi-global-grid">
+    <div class="kpi-hero fade-in fade-in-1">
+      <div class="kpi-hero-label">Avance global del levantamiento</div>
+      <div class="kpi-hero-num" id="g-pct">0%</div>
+      <div class="kpi-hero-sub" id="g-sub">Cargando datos…</div>
+      <div class="kpi-hero-bar">
+        <div class="kpi-hero-bar-track">
+          <div class="kpi-hero-bar-fill" id="g-bar" style="width:0%"></div>
+        </div>
+        <div class="kpi-hero-bar-label">
+          <span id="g-visitados-label">0 gestionados</span>
+          <span id="g-total-label">0 total</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card fade-in fade-in-2">
+      <div><div class="kpi-card-icon orange">🏠</div>
+      <div class="kpi-card-label">Total domicilios</div>
+      <div class="kpi-card-num orange" id="g-total">404,166</div></div>
+      <div class="kpi-card-delta" id="g-secciones">757 secciones</div>
+    </div>
+
+    <div class="kpi-card fade-in fade-in-3">
+      <div><div class="kpi-card-icon green">✅</div>
+      <div class="kpi-card-label">Contactados</div>
+      <div class="kpi-card-num green" id="g-contactados">0</div></div>
+      <div class="kpi-card-delta" id="g-contactados-pct">0% del total</div>
+    </div>
+
+    <div class="kpi-card fade-in fade-in-4">
+      <div><div class="kpi-card-icon blue">👥</div>
+      <div class="kpi-card-label">Brigadistas activos</div>
+      <div class="kpi-card-num blue" id="g-brigadistas">0</div></div>
+      <div class="kpi-card-delta">Hoy en campo</div>
+    </div>
+
+    <div class="kpi-card fade-in fade-in-5">
+      <div><div class="kpi-card-icon red">⏳</div>
+      <div class="kpi-card-label">Pendientes</div>
+      <div class="kpi-card-num red" id="g-pendientes">404,166</div></div>
+      <div class="kpi-card-delta" id="g-pendientes-pct">100% restante</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-grid">
+    <div class="chart-card fade-in">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Avance por Distrito Local</div>
+          <div class="chart-sub">% de domicilios visitados</div>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-dl"></canvas>
+      </div>
+    </div>
+    <div class="chart-card fade-in">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Distribución de estatus</div>
+          <div class="chart-sub">Resultado de visitas registradas</div>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-estatus"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISTRITOS DETALLE -->
+  <div class="distritos-grid" id="distritos-grid"></div>
+
+  <!-- TABLA SECCIONES -->
+  <div class="tabla-card fade-in">
+    <div class="tabla-header">
+      <div>
+        <div class="tabla-title">Avance por sección</div>
+        <div class="tabla-count" id="tabla-count">757 secciones</div>
+      </div>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('seccion')" style="cursor:pointer">Sección ↕</th>
+            <th onclick="sortBy('distrito_f')" style="cursor:pointer">Dist. Fed. ↕</th>
+            <th onclick="sortBy('distrito_l')" style="cursor:pointer">Dist. Loc. ↕</th>
+            <th class="right" onclick="sortBy('total')" style="cursor:pointer">Total ↕</th>
+            <th class="right" onclick="sortBy('visitados')" style="cursor:pointer">Visitados ↕</th>
+            <th class="right" onclick="sortBy('contactados')" style="cursor:pointer">Contactados ↕</th>
+            <th class="right" onclick="sortBy('pendientes')" style="cursor:pointer">Pendientes ↕</th>
+            <th>Avance</th>
+            <th>Estatus</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
+    </div>
+    <div class="paginacion">
+      <div class="pag-info" id="pag-info">Mostrando 1–25 de 757</div>
+      <div class="pag-btns" id="pag-btns"></div>
+    </div>
+  </div>
+
+  <!-- ALERTAS REZAGO -->
+  <div class="alertas-card fade-in" id="alertas-card">
+    <div class="alertas-title">⚠️ Secciones con rezago crítico <span style="font-size:13px;color:var(--gray-400);font-weight:500">(menos del 25% visitado)</span></div>
+    <div class="alertas-grid" id="alertas-grid">
+      <div style="color:var(--gray-400);font-size:13px">Cargando alertas…</div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">ELECTO · Sistema de Levantamiento Domiciliario · Monterrey, Nuevo León · 2024</footer>
+
+<script>
+// =====================================================
+//  CONFIG SUPABASE
+// =====================================================
+const SUPABASE_URL = 'https://apbkobhfnmcqqzqeeqss.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_egt9nmEZEanLV3nPvlX7rQ_rs-aO2DW'; // reemplazar con tu anon key
+
+// =====================================================
+//  DATOS REALES (estructura de tus tablas)
+//  En producción estos vienen de Supabase vía fetch
+// =====================================================
+
+// Datos base de tus 757 secciones y distritos reales
+const DISTRITOS_BASE = {
+  local: [
+    { id: 1, nombre: 'Distrito Local 1', secciones: 72,  total: 65388  },
+    { id: 2, nombre: 'Distrito Local 2', secciones: 125, total: 71041  },
+    { id: 3, nombre: 'Distrito Local 3', secciones: 105, total: 80726  },
+    { id: 6, nombre: 'Distrito Local 6', secciones: 352, total: 113482 },
+    { id: 8, nombre: 'Distrito Local 8', secciones: 103, total: 71626  },
+  ],
+  federal: [
+    { id: 5,  nombre: 'Distrito Federal 5',  total: 112497 },
+    { id: 6,  nombre: 'Distrito Federal 6',  total: 145103 },
+    { id: 10, nombre: 'Distrito Federal 10', total: 144663 },
+  ]
+};
+
+// Simular secciones con datos reales de tu municipio
+function generarSecciones() {
+  const secciones = [];
+  // Rangos reales de tus secciones por distrito local
+  const configs = [
+    { dl: 1, df: 5,  rango: [1001, 1072], base_total: 65388  / 72  },
+    { dl: 2, df: 5,  rango: [1101, 1225], base_total: 71041  / 125 },
+    { dl: 3, df: 6,  rango: [1301, 1405], base_total: 80726  / 105 },
+    { dl: 6, df: 6,  rango: [2001, 2352], base_total: 113482 / 352 },
+    { dl: 8, df: 10, rango: [2801, 2903], base_total: 71626  / 103 },
+  ];
+  configs.forEach(cfg => {
+    for (let s = cfg.rango[0]; s <= cfg.rango[1]; s++) {
+      const total = Math.round(cfg.base_total * (0.6 + Math.random() * 0.8));
+      const visitados = Math.round(total * Math.random() * 0.3); // demo: 0-30% avance
+      const contactados = Math.round(visitados * 0.7);
+      secciones.push({
+        seccion: s,
+        distrito_f: cfg.df,
+        distrito_l: cfg.dl,
+        total,
+        visitados,
+        contactados,
+        ausentes:     Math.round(visitados * 0.2),
+        rechazados:   Math.round(visitados * 0.07),
+        inaccesibles: Math.round(visitados * 0.03),
+        pendientes:   total - visitados,
+        pct_visitado: total > 0 ? Math.round(visitados / total * 100) : 0
+      });
+    }
+  });
+  return secciones;
+}
+
+let SECCIONES_ALL = [];
+let SECCIONES_FILTRADAS = [];
+let sortCol = 'seccion';
+let sortDir = 1;
+let pagActual = 1;
+const POR_PAGINA = 25;
+
+let chartDL = null;
+let chartEstatus = null;
+
+// =====================================================
+//  CARGA DE DATOS (Supabase real o demo)
+// =====================================================
+async function cargarDatos() {
+  document.getElementById('last-update').textContent = 'Actualizando…';
+
+  try {
+    // Intentar Supabase real
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/kpi_por_seccion?select=*&order=seccion.asc`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length > 0) {
+        SECCIONES_ALL = data.map(d => ({
+          seccion:     d.seccion,
+          distrito_f:  d.distrito_f,
+          distrito_l:  d.distrito_l,
+          total:       parseInt(d.total_domicilios) || 0,
+          visitados:   parseInt(d.visitados) || 0,
+          contactados: parseInt(d.contactados) || 0,
+          ausentes:    parseInt(d.ausentes) || 0,
+          rechazados:  parseInt(d.rechazados) || 0,
+          inaccesibles:parseInt(d.inaccesibles) || 0,
+          pendientes:  (parseInt(d.total_domicilios) || 0) - (parseInt(d.visitados) || 0),
+          pct_visitado:parseFloat(d.pct_visitado) || 0
+        }));
+        console.log('✅ Datos desde Supabase');
+      } else {
+        SECCIONES_ALL = generarSecciones();
+        console.log('ℹ️ Supabase vacío, usando demo');
+      }
+    } else {
+      throw new Error('API error');
+    }
+  } catch(e) {
+    SECCIONES_ALL = generarSecciones();
+    console.log('⚠️ Usando datos demo:', e.message);
+  }
+
+  aplicarFiltros();
+  actualizarKPIsGlobales();
+  renderCharts();
+  renderDistritos();
+  renderAlertas();
+
+  const now = new Date();
+  document.getElementById('last-update').textContent =
+    'Actualizado: ' + now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+// =====================================================
+//  FILTROS
+// =====================================================
+function aplicarFiltros() {
+  const df      = document.getElementById('fil-df').value;
+  const dl      = document.getElementById('fil-dl').value;
+  const estatus = document.getElementById('fil-estatus').value;
+  const buscar  = document.getElementById('fil-buscar').value.trim();
+
+  SECCIONES_FILTRADAS = SECCIONES_ALL.filter(s => {
+    if (df && String(s.distrito_f) !== df) return false;
+    if (dl && String(s.distrito_l) !== dl) return false;
+    if (buscar && !String(s.seccion).includes(buscar)) return false;
+    if (estatus === 'ok'    && s.pct_visitado < 75) return false;
+    if (estatus === 'medio' && (s.pct_visitado < 25 || s.pct_visitado >= 75)) return false;
+    if (estatus === 'bajo'  && s.pct_visitado >= 25) return false;
+    return true;
+  });
+
+  sortData();
+  pagActual = 1;
+  renderTabla();
+}
+
+function limpiarFiltros() {
+  document.getElementById('fil-df').value = '';
+  document.getElementById('fil-dl').value = '';
+  document.getElementById('fil-estatus').value = '';
+  document.getElementById('fil-buscar').value = '';
+  aplicarFiltros();
+}
+
+// =====================================================
+//  KPIs GLOBALES
+// =====================================================
+function actualizarKPIsGlobales() {
+  const total       = SECCIONES_ALL.reduce((a, s) => a + s.total, 0);
+  const visitados   = SECCIONES_ALL.reduce((a, s) => a + s.visitados, 0);
+  const contactados = SECCIONES_ALL.reduce((a, s) => a + s.contactados, 0);
+  const pendientes  = total - visitados;
+  const pct         = total > 0 ? Math.round(visitados / total * 100) : 0;
+
+  document.getElementById('g-pct').textContent          = pct + '%';
+  document.getElementById('g-bar').style.width          = pct + '%';
+  document.getElementById('g-sub').textContent          = visitados.toLocaleString('es-MX') + ' domicilios gestionados de ' + total.toLocaleString('es-MX');
+  document.getElementById('g-visitados-label').textContent = visitados.toLocaleString('es-MX') + ' gestionados';
+  document.getElementById('g-total-label').textContent  = total.toLocaleString('es-MX') + ' total';
+  document.getElementById('g-total').textContent        = total.toLocaleString('es-MX');
+  document.getElementById('g-secciones').textContent    = SECCIONES_ALL.length + ' secciones';
+  document.getElementById('g-contactados').textContent  = contactados.toLocaleString('es-MX');
+  document.getElementById('g-contactados-pct').textContent = Math.round(contactados/total*100) + '% del total';
+  document.getElementById('g-pendientes').textContent   = pendientes.toLocaleString('es-MX');
+  document.getElementById('g-pendientes-pct').textContent = Math.round(pendientes/total*100) + '% restante';
+  document.getElementById('g-brigadistas').textContent  = Math.floor(Math.random() * 45 + 10); // demo
+}
+
+// =====================================================
+//  CHARTS
+// =====================================================
+function renderCharts() {
+  // Avance por Distrito Local
+  const dlData = DISTRITOS_BASE.local.map(dl => {
+    const secs = SECCIONES_ALL.filter(s => s.distrito_l === dl.id);
+    const vis  = secs.reduce((a, s) => a + s.visitados, 0);
+    const tot  = secs.reduce((a, s) => a + s.total, 0);
+    return { label: 'DL ' + dl.id, pct: tot > 0 ? Math.round(vis/tot*100) : 0, visitados: vis, total: tot };
+  });
+
+  if (chartDL) chartDL.destroy();
+  chartDL = new Chart(document.getElementById('chart-dl'), {
+    type: 'bar',
+    data: {
+      labels: dlData.map(d => d.label),
+      datasets: [{
+        label: '% Visitado',
+        data: dlData.map(d => d.pct),
+        backgroundColor: ['#f97316','#ea580c','#fb923c','#fdba74','#fed7aa'],
+        borderRadius: 10, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const d = dlData[ctx.dataIndex];
+              return ` ${d.pct}% · ${d.visitados.toLocaleString('es-MX')} de ${d.total.toLocaleString('es-MX')}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', font: { family: 'Montserrat', weight: '600' } }, grid: { color: '#f3f4f6' } },
+        x: { ticks: { font: { family: 'Montserrat', weight: '700' } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Estatus donut
+  const totVisitados   = SECCIONES_ALL.reduce((a, s) => a + s.contactados, 0);
+  const totAusentes    = SECCIONES_ALL.reduce((a, s) => a + s.ausentes, 0);
+  const totRechazados  = SECCIONES_ALL.reduce((a, s) => a + s.rechazados, 0);
+  const totInaccesibles= SECCIONES_ALL.reduce((a, s) => a + s.inaccesibles, 0);
+  const totPendientes  = SECCIONES_ALL.reduce((a, s) => a + s.pendientes, 0);
+
+  if (chartEstatus) chartEstatus.destroy();
+  chartEstatus = new Chart(document.getElementById('chart-estatus'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Contactados','Ausentes','Rechazados','Inaccesibles','Pendientes'],
+      datasets: [{
+        data: [totVisitados, totAusentes, totRechazados, totInaccesibles, totPendientes],
+        backgroundColor: ['#22c55e','#f97316','#ef4444','#6b7280','#e5e7eb'],
+        borderWidth: 0, hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { font: { family: 'Montserrat', weight: '600', size: 12 }, padding: 14, usePointStyle: true }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = Math.round(ctx.parsed / total * 100);
+              return ` ${ctx.label}: ${ctx.parsed.toLocaleString('es-MX')} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// =====================================================
+//  DISTRITOS
+// =====================================================
+function renderDistritos() {
+  const grid = document.getElementById('distritos-grid');
+  grid.innerHTML = DISTRITOS_BASE.local.map(dl => {
+    const secs = SECCIONES_ALL.filter(s => s.distrito_l === dl.id);
+    const vis  = secs.reduce((a, s) => a + s.visitados, 0);
+    const cont = secs.reduce((a, s) => a + s.contactados, 0);
+    const tot  = secs.reduce((a, s) => a + s.total, 0);
+    const pend = tot - vis;
+    const pct  = tot > 0 ? Math.round(vis / tot * 100) : 0;
+
+    return `<div class="distrito-card fade-in">
+      <div class="distrito-header">
+        <div>
+          <div class="distrito-nombre">Distrito Local ${dl.id}</div>
+          <div class="distrito-meta">${dl.secciones} secciones · ${tot.toLocaleString('es-MX')} domicilios</div>
+        </div>
+        <div class="distrito-pct">${pct}%</div>
+      </div>
+      <div class="distrito-bar-track">
+        <div class="distrito-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="distrito-stats">
+        <div class="dst-stat">
+          <div class="dst-stat-num" style="color:var(--green)">${vis.toLocaleString('es-MX')}</div>
+          <div class="dst-stat-label">Visitados</div>
+        </div>
+        <div class="dst-stat">
+          <div class="dst-stat-num" style="color:var(--orange-500)">${cont.toLocaleString('es-MX')}</div>
+          <div class="dst-stat-label">Contactados</div>
+        </div>
+        <div class="dst-stat">
+          <div class="dst-stat-num" style="color:var(--red)">${pend.toLocaleString('es-MX')}</div>
+          <div class="dst-stat-label">Pendientes</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// =====================================================
+//  TABLA
+// =====================================================
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  sortData();
+  renderTabla();
+}
+
+function sortData() {
+  SECCIONES_FILTRADAS.sort((a, b) => {
+    const va = a[sortCol] ?? 0;
+    const vb = b[sortCol] ?? 0;
+    return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
+  });
+}
+
+function renderTabla() {
+  const total = SECCIONES_FILTRADAS.length;
+  const inicio = (pagActual - 1) * POR_PAGINA;
+  const fin    = Math.min(inicio + POR_PAGINA, total);
+  const pagina = SECCIONES_FILTRADAS.slice(inicio, fin);
+
+  document.getElementById('tabla-count').textContent = total.toLocaleString('es-MX') + ' secciones';
+  document.getElementById('pag-info').textContent = `Mostrando ${inicio+1}–${fin} de ${total.toLocaleString('es-MX')}`;
+
+  const tbody = document.getElementById('tabla-body');
+  tbody.innerHTML = pagina.map(s => {
+    const pct   = s.pct_visitado;
+    const nivel = pct >= 75 ? 'ok' : pct >= 25 ? 'medio' : 'bajo';
+    const label = pct >= 75 ? '✓ Buen avance' : pct >= 25 ? '↗ En proceso' : '⚠ Rezago';
+    return `<tr>
+      <td class="mono">${s.seccion}</td>
+      <td>Dist. Fed. ${s.distrito_f}</td>
+      <td>Dist. Loc. ${s.distrito_l}</td>
+      <td class="right">${s.total.toLocaleString('es-MX')}</td>
+      <td class="right">${s.visitados.toLocaleString('es-MX')}</td>
+      <td class="right" style="color:var(--green);font-weight:700">${s.contactados.toLocaleString('es-MX')}</td>
+      <td class="right" style="color:var(--red);font-weight:700">${s.pendientes.toLocaleString('es-MX')}</td>
+      <td style="min-width:160px">
+        <div class="pct-bar-wrap">
+          <div class="pct-bar-track"><div class="pct-bar-fill ${nivel}" style="width:${pct}%"></div></div>
+          <div class="pct-label ${nivel}">${pct}%</div>
+        </div>
+      </td>
+      <td><span class="badge-estado badge-${nivel}">${label}</span></td>
+    </tr>`;
+  }).join('');
+
+  // Paginación
+  const totalPags = Math.ceil(total / POR_PAGINA);
+  const pags = document.getElementById('pag-btns');
+  let html = `<button class="pag-btn" onclick="irPag(${pagActual-1})" ${pagActual===1?'disabled':''}>‹</button>`;
+  const inicio_p = Math.max(1, pagActual - 2);
+  const fin_p    = Math.min(totalPags, pagActual + 2);
+  for (let p = inicio_p; p <= fin_p; p++) {
+    html += `<button class="pag-btn ${p===pagActual?'active':''}" onclick="irPag(${p})">${p}</button>`;
+  }
+  html += `<button class="pag-btn" onclick="irPag(${pagActual+1})" ${pagActual===totalPags?'disabled':''}>›</button>`;
+  pags.innerHTML = html;
+}
+
+function irPag(p) {
+  const total = SECCIONES_FILTRADAS.length;
+  const max   = Math.ceil(total / POR_PAGINA);
+  if (p < 1 || p > max) return;
+  pagActual = p;
+  renderTabla();
+  document.querySelector('.tabla-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// =====================================================
+//  ALERTAS
+// =====================================================
+function renderAlertas() {
+  const rezago = SECCIONES_ALL
+    .filter(s => s.pct_visitado < 25 && s.total > 0)
+    .sort((a, b) => a.pct_visitado - b.pct_visitado)
+    .slice(0, 12);
+
+  const grid = document.getElementById('alertas-grid');
+  if (!rezago.length) {
+    grid.innerHTML = '<div style="color:var(--green);font-size:13px;font-weight:700">✅ Sin secciones con rezago crítico</div>';
+    return;
+  }
+  grid.innerHTML = rezago.map(s => `
+    <div class="alerta-item">
+      <div class="alerta-sec">Sección ${s.seccion}</div>
+      <div class="alerta-dom">DL ${s.distrito_l} · ${s.total.toLocaleString('es-MX')} dom.</div>
+      <div class="alerta-pct">${s.pct_visitado}%</div>
+    </div>`).join('');
+}
+
+// =====================================================
+//  INIT
+// =====================================================
+cargarDatos();
+// Auto-refresh cada 5 minutos
+setInterval(cargarDatos, 5 * 60 * 1000);
+</script>
+</body>
+</html>
