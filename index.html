@@ -881,25 +881,35 @@ async function cargarDomicilios(seccion, token){
 
     const limite = secciones.length * 4000; // 4000 por sección aprox
 
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/domicilios?${filtro}&select=id,identifica,tipovial,nomvial,numext,nomasen,cp,seccion,distrito_f,distrito_l&limit=${limite}&order=seccion.asc,nomvial.asc`,
-      { headers:{
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${token||SUPABASE_KEY}`,
-        'Prefer': 'count=none',
-        'Range-Unit': 'items',
-        'Range': `0-${limite-1}`
-      }}
-    );
-    if(res.ok){
-      const data = await res.json();
-      if(data.length > 0){
-        S.doms = data;
-        console.log(`✅ ${data.length} domicilios cargados de secciones ${secciones.join(', ')}`);
-        // Guardar en localStorage para offline
-        try{ localStorage.setItem('doms_cache', JSON.stringify({secciones, data, ts: Date.now()})); }catch(e){}
-        return;
-      }
+    // Cargar por sección de forma paginada (Supabase Free = 1000 max por request)
+    const PAGE = 1000;
+    let todosLosDoms = [];
+
+    for (const sec of secciones) {
+      let offset = 0;
+      let pagina = [];
+      do {
+        const r = await fetch(
+          `${SUPABASE_URL}/rest/v1/domicilios?seccion=eq.${sec}&select=id,identifica,tipovial,nomvial,numext,nomasen,cp,seccion,distrito_f,distrito_l&limit=${PAGE}&offset=${offset}&order=nomvial.asc,numext.asc`,
+          { headers:{
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${token||SUPABASE_KEY}`,
+            'Prefer': 'count=none'
+          }}
+        );
+        if (!r.ok) break;
+        pagina = await r.json();
+        todosLosDoms = todosLosDoms.concat(pagina);
+        offset += PAGE;
+        console.log(`  Sección ${sec}: ${todosLosDoms.length} total hasta ahora...`);
+      } while (pagina.length === PAGE);
+    }
+
+    if(todosLosDoms.length > 0){
+      S.doms = todosLosDoms;
+      console.log(`✅ ${todosLosDoms.length} domicilios cargados de secciones ${secciones.join(', ')}`);
+      try{ localStorage.setItem('doms_cache', JSON.stringify({secciones, data: todosLosDoms, ts: Date.now()})); }catch(e){}
+      return;
     }
     throw new Error('Sin datos');
   } catch(e) {
