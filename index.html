@@ -813,7 +813,7 @@ async function doLogin(){
     if(!res.ok) throw new Error(data.error_description || data.msg || 'Error de autenticación');
 
     // Obtener perfil brigadista
-    const pRes = await fetch(`${SUPABASE_URL}/rest/v1/brigadistas?id=eq.${data.user.id}&select=*`,{
+    const pRes = await fetch(`${SUPABASE_URL}/rest/v1/brigadistas?id=eq.${data.user.id}&select=id,nombre,telefono,seccion,secciones,distrito_f,distrito_l,rol`,{
       headers:{
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${data.access_token}`
@@ -826,8 +826,9 @@ async function doLogin(){
       id:         data.user.id,
       email:      user,
       token:      data.access_token,
-      nombre:     p.nombre || user.split('@')[0],
+      nombre:     p.nombre     || user.split('@')[0],
       seccion:    p.seccion    || 2126,
+      secciones:  p.secciones  || [p.seccion || 2126],
       distrito_f: p.distrito_f || 6,
       distrito_l: p.distrito_l || 6,
       rol:        p.rol        || 'BRIGADISTA'
@@ -839,7 +840,7 @@ async function doLogin(){
   } catch(e) {
     console.warn('Login error:', e.message);
     // Demo fallback — intentar cargar sección desde Supabase por email
-    S.brig = { nombre: user.split('@')[0], seccion:2126, distrito_f:6, distrito_l:6, email:user };
+    S.brig = { nombre: user.split('@')[0], seccion:2126, secciones:[2126], distrito_f:6, distrito_l:6, email:user };
     await cargarDomicilios(2126, SUPABASE_KEY);
     goPage('home');
   }
@@ -849,17 +850,35 @@ async function doLogin(){
 async function cargarDomicilios(seccion, token){
   try {
     toast('Cargando domicilios…');
+
+    // Obtener secciones asignadas del brigadista (puede ser array)
+    let secciones = [];
+    if(S.brig && S.brig.secciones && S.brig.secciones.length > 0){
+      secciones = S.brig.secciones;
+    } else {
+      secciones = [seccion];
+    }
+
+    console.log('Cargando secciones:', secciones);
+
+    // Construir filtro para múltiples secciones: seccion=in.(2132,2133,2134)
+    const filtro = secciones.length === 1
+      ? `seccion=eq.${secciones[0]}`
+      : `seccion=in.(${secciones.join(',')})`;
+
+    const limite = secciones.length * 4000; // 4000 por sección aprox
+
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/domicilios?seccion=eq.${seccion}&select=id,identifica,tipovial,nomvial,numext,nomasen,cp,seccion,distrito_f,distrito_l&limit=2000`,
+      `${SUPABASE_URL}/rest/v1/domicilios?${filtro}&select=id,identifica,tipovial,nomvial,numext,nomasen,cp,seccion,distrito_f,distrito_l&limit=${limite}&order=seccion.asc,nomvial.asc`,
       { headers:{ 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token||SUPABASE_KEY}` }}
     );
     if(res.ok){
       const data = await res.json();
       if(data.length > 0){
         S.doms = data;
-        console.log(`✅ ${data.length} domicilios cargados de sección ${seccion}`);
+        console.log(`✅ ${data.length} domicilios cargados de secciones ${secciones.join(', ')}`);
         // Guardar en localStorage para offline
-        try{ localStorage.setItem('doms_cache', JSON.stringify({seccion, data, ts: Date.now()})); }catch(e){}
+        try{ localStorage.setItem('doms_cache', JSON.stringify({secciones, data, ts: Date.now()})); }catch(e){}
         return;
       }
     }
@@ -869,13 +888,12 @@ async function cargarDomicilios(seccion, token){
     // Intentar caché local
     try {
       const cache = JSON.parse(localStorage.getItem('doms_cache')||'null');
-      if(cache && cache.seccion === seccion && cache.data.length > 0){
+      if(cache && cache.data && cache.data.length > 0){
         S.doms = cache.data;
         console.log(`📦 ${cache.data.length} domicilios desde caché`);
         return;
       }
     } catch(e2){}
-    // Último recurso: demo
     S.doms = demoDoms();
   }
 }
