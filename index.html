@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- ELECTO PWA v3.1 - 202606091352 -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -848,11 +849,11 @@ async function doLogin(){
     await cargarDomicilios(S.brig.seccion, S.brig.token);
     goPage('home');
   } catch(e) {
-    console.warn('Login error:', e.message);
-    // Demo fallback — intentar cargar sección desde Supabase por email
-    S.brig = { nombre: user.split('@')[0], seccion:2126, secciones:[2126], distrito_f:6, distrito_l:6, email:user };
-    await cargarDomicilios(2126, SUPABASE_KEY);
-    goPage('home');
+    console.error('Login error:', e.message);
+    toast('Error: ' + (e.message || 'Verifica tu email y contraseña'), 'err');
+    btn.disabled=false;
+    btn.textContent='Entrar';
+    return;
   }
   btn.disabled=false; btn.textContent='Entrar';
 }
@@ -897,16 +898,23 @@ async function cargarDomicilios(seccion, token){
     throw new Error('Sin datos');
   } catch(e) {
     console.warn('Usando caché o demo:', e.message);
-    // Intentar caché local
+    // Intentar caché local — solo si las secciones coinciden
     try {
       const cache = JSON.parse(localStorage.getItem('doms_cache')||'null');
-      if(cache && cache.data && cache.data.length > 0){
+      const cacheSecs = JSON.stringify((cache?.secciones||[]).sort());
+      const brigSecs  = JSON.stringify((secciones||[]).sort());
+      if(cache && cache.data && cache.data.length > 0 && cacheSecs === brigSecs){
         S.doms = cache.data;
-        console.log(`📦 ${cache.data.length} domicilios desde caché`);
+        console.log(`📦 ${cache.data.length} domicilios desde caché (secciones ${secciones.join(',')})`);
         return;
+      } else if(cache) {
+        console.log('Caché descartado: secciones no coinciden', cacheSecs, '!=', brigSecs);
+        localStorage.removeItem('doms_cache');
       }
     } catch(e2){}
-    S.doms = demoDoms();
+    console.error('No se pudieron cargar domicilios desde Supabase ni caché');
+    S.doms = [];
+    toast('Sin domicilios — verifica conexión', 'err');
   }
 }
 
@@ -1222,12 +1230,10 @@ function toast(msg,type){
 // =====================================================
 //  SW
 // =====================================================
+// Desregistrar cualquier SW existente que pueda cachear versiones viejas
 if('serviceWorker' in navigator){
-  // Limpiar SWs viejos y registrar el nuevo
   navigator.serviceWorker.getRegistrations().then(regs => {
     regs.forEach(r => r.unregister());
-  }).then(() => {
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
   });
 }
 
