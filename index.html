@@ -853,10 +853,12 @@ async function cargarDomicilios(seccion, token){
 
     // Obtener secciones asignadas del brigadista (puede ser array)
     let secciones = [];
-    if(S.brig && S.brig.secciones && S.brig.secciones.length > 0){
-      secciones = S.brig.secciones;
+    if(S.brig && S.brig.secciones && Array.isArray(S.brig.secciones) && S.brig.secciones.length > 0){
+      secciones = S.brig.secciones.map(Number).filter(Boolean);
+    } else if(seccion) {
+      secciones = [Number(seccion)];
     } else {
-      secciones = [seccion];
+      secciones = [2126];
     }
 
     console.log('Cargando secciones:', secciones);
@@ -1211,7 +1213,12 @@ function toast(msg,type){
 //  SW
 // =====================================================
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  // Limpiar SWs viejos y registrar el nuevo
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
+  }).then(() => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
 }
 
 updateOffline();
