@@ -654,6 +654,7 @@ async function cargarDatos() {
 //  FILTROS — lógica completamente separada
 // =====================================================
 function aplicarFiltros() {
+  if (!SECS_ALL.length) return; // no data yet
   const df    = document.getElementById('f-df').value;
   const dl    = document.getElementById('f-dl').value;
   const nivel = document.getElementById('f-nivel').value;
@@ -1452,6 +1453,8 @@ async function renderActividad(body) {
 // =====================================================
 //  INIT
 // =====================================================
+// Inicializar SECS_FIL vacío para evitar errores antes de carga
+SECS_FIL = [];
 cargarDatos();
 setInterval(cargarDatos, 5*60*1000);
 </script>
