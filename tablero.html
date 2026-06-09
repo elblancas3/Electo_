@@ -752,7 +752,7 @@ function renderCharts() {
       plugins:{
         legend:{position:'right',labels:{
           font:{family:'Montserrat',weight:'600',size:11},
-          padding:12, usePointStyle:true, pointStyleWidth:8
+          padding:12, usePointStyle:true, pointStyle:'circle', pointStyleWidth:10
         }},
         tooltip:{callbacks:{
           label: ctx => {
@@ -1016,6 +1016,9 @@ function initMapa() {
 function renderML(capa) {
   MAP_CAPA = capa;
   if (GJ_LAYER) MAP.removeLayer(GJ_LAYER);
+  // Remove old labels
+  if (window._labelLayers) window._labelLayers.forEach(l => MAP.removeLayer(l));
+  window._labelLayers = [];
   GJ_LAYER = L.geoJSON(IPS_GJ, {
     style: feat => ({
       fillColor: getC(feat.properties, capa),
@@ -1049,6 +1052,19 @@ function renderML(capa) {
       );
       layer.on('mouseover', e => e.target.setStyle({ fillOpacity: 0.95, weight: 2, color: '#1e293b' }));
       layer.on('mouseout', e => GJ_LAYER.resetStyle(e.target));
+      try {
+        const c = layer.getBounds().getCenter();
+        const lbl = L.marker(c, {
+          icon: L.divIcon({
+            className:'',
+            html:'<div style="font-family:Montserrat,sans-serif;font-size:9px;font-weight:800;color:#1e293b;background:rgba(255,255,255,.82);padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none">' + p.SECCION + '</div>',
+            iconAnchor:[15,8]
+          }),
+          interactive:false, zIndexOffset:-1000
+        }).addTo(MAP);
+        window._labelLayers = window._labelLayers || [];
+        window._labelLayers.push(lbl);
+      } catch(e2) {}
     }
   }).addTo(MAP);
   const ley = document.getElementById('mapa-ley');
