@@ -1,59 +1,60 @@
-// =====================================================
-//  SERVICE WORKER - Levantamiento NL PWA
-// =====================================================
+// ELECTO Service Worker v3
+// Simple: cache-first for assets, network-first for API
 
-const CACHE_NAME = 'levantamiento-nl-v2';
-const BASE = '/Electo_/';
+const CACHE = 'electo-v3';
 
-const STATIC_ASSETS = [
-  BASE + 'pwa_levantamiento.html',
-];
-
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(STATIC_ASSETS).catch(() => {});
-      })
-      .then(() => self.skipWaiting())
-  );
+self.addEventListener('install', e => {
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
+self.addEventListener('activate', e => {
+  e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
 
+  // Supabase API - always network
   if (url.hostname.includes('supabase.co')) {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({ error: 'Sin conexión' }), {
-          status: 503, headers: { 'Content-Type': 'application/json' }
-        });
-      })
+    e.respondWith(
+      fetch(e.request).catch(() =>
+        new Response(JSON.stringify({error:'Sin conexión'}), {
+          status: 503,
+          headers: {'Content-Type':'application/json'}
+        })
+      )
     );
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(cached => {
+  // Navegación - network first, fallback a caché
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Assets - cache first
+  e.respondWith(
+    caches.match(e.request).then(cached => {
       if (cached) return cached;
-      return fetch(event.request).then(response => {
-        if (response && response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+      return fetch(e.request).then(res => {
+        if (res && res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
         }
-        return response;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match(BASE + 'pwa_levantamiento.html');
-        }
+        return res;
       });
     })
   );
