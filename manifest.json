@@ -2,7 +2,7 @@
   "name": "ELECTO · Levantamiento NL",
   "short_name": "ELECTO",
   "description": "Sistema de levantamiento domiciliario en campo para Nuevo León",
-  "start_url": "/Electo_/pwa_levantamiento.html",
+  "start_url": "/Electo_/",
   "scope": "/Electo_/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -26,7 +26,7 @@
   "shortcuts": [
     {
       "name": "Mi ruta",
-      "url": "/Electo_/pwa_levantamiento.html",
+      "url": "/Electo_/",
       "description": "Ver domicilios asignados"
     }
   ]
