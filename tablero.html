@@ -618,7 +618,7 @@ async function cargarDatos() {
     const pct  = tot > 0 ? (vis/tot*100) : 0;
     const brig = Number(G.brigadistas_activos) || 0;
 
-    set('g-pct',      pct < 1 && pct > 0 ? '<1%' : Math.round(pct)+'%');
+    set('g-pct',      Math.round(pct)+'%');
     set('g-bar',      null, {style:{width: Math.min(pct,100)+'%'}});
     set('g-desc',     `${fmt(vis)} domicilios gestionados de ${fmt(tot)}`);
     set('g-vis-lbl',  `${fmt(vis)} gestionados`);
@@ -744,7 +744,8 @@ function renderCharts() {
       datasets:[{
         data:[totVis,totAus,totRec,totInac,totInc,totPend],
         backgroundColor:['#16a34a','#f97316','#dc2626','#64748b','#2563eb','#e2e8f0'],
-        borderWidth:0, hoverOffset:8
+        borderWidth:0, hoverOffset:8,
+        pointStyle:'circle'
       }]
     },
     options:{
@@ -807,7 +808,7 @@ function renderDistritosData(dists, tipo) {
           <div class="dist-name">Distrito ${tipo==='local'?'Local':'Federal'} ${d.id}</div>
           <div class="dist-meta">${numSecs} secciones · ${fmt(tot)} domicilios</div>
         </div>
-        <div class="dist-pct-big">${pct < 1 && pct > 0 ? '<1' : Math.round(pct)}%</div>
+        <div class="dist-pct-big">${Math.round(pct)}%</div>
       </div>
       <div class="dist-bar-track"><div class="dist-bar-fill" style="width:${Math.min(pct,100)}%"></div></div>
       <div class="dist-stats">
@@ -1010,6 +1011,20 @@ function initMapa() {
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: 'OpenStreetMap / CARTO', subdomains: 'abcd', maxZoom: 19
   }).addTo(MAP);
+
+  MAP.on('zoomend', () => {
+    const zoom = MAP.getZoom();
+    if (!window._labelLayers) return;
+    window._labelLayers.forEach(item => {
+      if (!item || !item.marker) return;
+      if (zoom >= 13) {
+        if (!MAP.hasLayer(item.marker)) item.marker.addTo(MAP);
+      } else {
+        if (MAP.hasLayer(item.marker)) MAP.removeLayer(item.marker);
+      }
+    });
+  });
+
   renderML('avance');
 }
 
@@ -1017,7 +1032,7 @@ function renderML(capa) {
   MAP_CAPA = capa;
   if (GJ_LAYER) MAP.removeLayer(GJ_LAYER);
   // Remove old labels
-  if (window._labelLayers) window._labelLayers.forEach(l => MAP.removeLayer(l));
+  if (window._labelLayers) window._labelLayers.forEach(item => { try { MAP.removeLayer(item.marker); } catch(e){} });
   window._labelLayers = [];
   GJ_LAYER = L.geoJSON(IPS_GJ, {
     style: feat => ({
@@ -1056,14 +1071,14 @@ function renderML(capa) {
         const c = layer.getBounds().getCenter();
         const lbl = L.marker(c, {
           icon: L.divIcon({
-            className:'',
-            html:'<div style="font-family:Montserrat,sans-serif;font-size:9px;font-weight:800;color:#1e293b;background:rgba(255,255,255,.82);padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none">' + p.SECCION + '</div>',
+            className:'sec-label-marker',
+            html:'<div class="sec-lbl-div" style="font-family:Montserrat,sans-serif;font-size:9px;font-weight:800;color:#1e293b;background:rgba(255,255,255,.82);padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none">' + p.SECCION + '</div>',
             iconAnchor:[15,8]
           }),
           interactive:false, zIndexOffset:-1000
-        }).addTo(MAP);
+        });
         window._labelLayers = window._labelLayers || [];
-        window._labelLayers.push(lbl);
+        window._labelLayers.push({marker: lbl, center: c});
       } catch(e2) {}
     }
   }).addTo(MAP);
