@@ -822,19 +822,29 @@ async function doLogin(){
     const perfil = await pRes.json();
     const p = perfil[0] || {};
 
+    // Parsear secciones — puede venir como array, string o null
+    let secsArr = [];
+    if (Array.isArray(p.secciones) && p.secciones.length > 0) {
+      secsArr = p.secciones.map(Number).filter(Boolean);
+    } else if (typeof p.secciones === 'string' && p.secciones) {
+      secsArr = p.secciones.replace(/[{}]/g,'').split(',').map(Number).filter(Boolean);
+    }
+    if (!secsArr.length && p.seccion) secsArr = [Number(p.seccion)];
+    if (!secsArr.length) secsArr = [2126];
+
     S.brig = {
       id:         data.user.id,
       email:      user,
       token:      data.access_token,
       nombre:     p.nombre     || user.split('@')[0],
-      seccion:    p.seccion    || 2126,
-      secciones:  p.secciones  || [p.seccion || 2126],
+      seccion:    secsArr[0],
+      secciones:  secsArr,
       distrito_f: p.distrito_f || 6,
       distrito_l: p.distrito_l || 6,
       rol:        p.rol        || 'BRIGADISTA'
     };
 
-    console.log('✅ Login OK:', S.brig.nombre, '· Sección:', S.brig.seccion);
+    console.log('✅ Login OK:', S.brig.nombre, '· Secciones:', S.brig.secciones);
     await cargarDomicilios(S.brig.seccion, S.brig.token);
     goPage('home');
   } catch(e) {
