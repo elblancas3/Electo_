@@ -950,9 +950,12 @@ function refreshHome(){
   const h = new Date().getHours();
   const sal = h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
   document.getElementById('h-greeting').textContent = sal+', '+S.brig.nombre.split(' ')[0];
-  document.getElementById('h-meta').textContent = 'Sección '+S.brig.seccion;
+  const secsLabel = S.brig.secciones && S.brig.secciones.length > 1
+    ? 'Secciones '+S.brig.secciones.join(', ')
+    : 'Sección '+S.brig.seccion;
+  document.getElementById('h-meta').textContent = secsLabel;
   document.getElementById('h-nombre').textContent = S.brig.nombre;
-  document.getElementById('h-info').textContent = `Sección ${S.brig.seccion} · Dist. Fed. ${S.brig.distrito_f} · Dist. Loc. ${S.brig.distrito_l}`;
+  document.getElementById('h-info').textContent = `${secsLabel} · Dist. Fed. ${S.brig.distrito_f} · Dist. Loc. ${S.brig.distrito_l}`;
 
   const total = S.doms.length;
   const vis   = Object.values(S.visitas);
@@ -967,7 +970,10 @@ function refreshHome(){
   document.getElementById('h-pendientes').textContent = pend;
   document.getElementById('h-pct').textContent      = pct+'%';
   document.getElementById('h-bar').style.width      = pct+'%';
-  document.getElementById('lista-meta').textContent = total+' domicilios · Secc. '+S.brig.seccion;
+  const listaSecs = S.brig.secciones && S.brig.secciones.length > 1
+    ? 'Secc. '+S.brig.secciones.join(', ')
+    : 'Secc. '+S.brig.seccion;
+  document.getElementById('lista-meta').textContent = total+' domicilios · '+listaSecs;
 
   const dot  = document.getElementById('sync-dot');
   const txt  = document.getElementById('sync-text');
